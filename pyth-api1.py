@@ -10,6 +10,10 @@ with open("Y:\\py\\integration_key_pod5.txt", "r") as f: # using  '\' (instead o
     api_key = "jwt " + f.read() #actual format for api_key. That was realy obvious DACOM >:C
 
 
+#importing VM-UUIDs from file
+with open("Y:\\py\\VM-UUIDs.txt", "r") as f:
+    vm_uuids =  f.read() 
+
 #get domain info "http://10.2.1.52/api/domains/uuid   OR  /domains/{id}/all-content/"
 def get_domain_info(domain_uuid):
     url= f"{base_url}/domains/{domain_uuid}"
@@ -83,7 +87,7 @@ def get_disk_info(domain_all_content):
 
 #pfsense 2cf0ecd3-5219-43b1-a471-1851a4f569e0
 #vPOD9-2 6b5b9a20-0e5c-4524-ac71-e6dd3c818228
-domain_uuid = "6b5b9a20-0e5c-4524-ac71-e6dd3c818228" 
+domain_uuid = vm_uuids 
 domain_info = get_domain_info(domain_uuid)
 domain_all_content = get_domain_all_content(domain_uuid)
 #vdisk_ids = domain_all_content["vdisks"]
