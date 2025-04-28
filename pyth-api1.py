@@ -2,6 +2,7 @@ import requests
 import json
 import copy
 import sys
+import secrets #for generating unique names
 
 base_url = "http://10.2.1.52/api"
 power_state = ["Unknown" , "Off" , "Suspend" , "On"] #3 - on; 2 - suspend; 1 - off; 0 - unknown
@@ -14,6 +15,11 @@ with open("Y:\\py\\integration_key_pod5.txt", "r") as f: # using  '\' (instead o
 #importing VM-UUIDs from file
 with open("Y:\\py\\VM-UUIDs.txt", "r") as f:
     vm_uuids =  f.read() 
+    
+#importing data_pool_uuid from file
+#selected data pool will be used for new disks and alike
+with open("Y:\\py\\data-pool.txt", "r") as f:
+    data_pool_uuid =  f.read()     
 
 #get domain info "http://10.2.1.52/api/domains/uuid   OR  /domains/{id}/all-content/"
 def get_domain_info(domain_uuid):
@@ -107,30 +113,29 @@ def delete_disk(vdisk_uuid):
             print(f"ERROR deleting disk {vdisk_uuid} :\n {response.status_code} - {response.text}")
             return False
 
-def create_disk(data_pool_uuid, vdisk_size):
-    url = f"{base_url}/vdisks/"
+def create_and_attach_disk(vm_id, data_pool_uuid, vdisk_size, preallocation):
+    domain_name=get_domain_info(domain_uuid)
+    disk_name=domain_name["verbose_name"]+secrets.token_hex(5) #generates unique hex id. this method can generate ~million unique ids
+    url = f"{base_url}/domains/{vm_id}/create-attach-vdisk/"
     headers={
     "Authorization" : api_key,
     "Content-Type" : "application/json",
     }
     payload= {
-    "verbose_name": "Auto-created-vdisk", #UNIC NAME !!!!!!!!!!
-    "preallocation": False,
+    "verbose_name": disk_name, #UNIQUE NAME !!!!!!!!!!
+    "preallocation": preallocation,
     "size": vdisk_size,
-    "datapool": data_pool_uuid
+    "datapool": data_pool_uuid,
+    "target_bus": "virtio",
     }    
     response = requests.post(url , headers=headers, json=payload)
     if response.status_code == 200:
-        print(f"vDisk {vdisk_size} has been created")
+        print(f"\nvDisk {disk_name} - {vdisk_size}GB has been created")
         return True
-
     else:
         print(f"ERROR creating vDisk :\n {response.status_code} - {response.text}")
         return False        
 
-def attach_disk(vdisk_uuid, vm_id):
-    url = f"{base_url}/domains/{vm_id}/attach_disk/"
-    #todo
 
 #so-called INT MAIN
 
@@ -164,15 +169,13 @@ if menu_choice == "Y" or menu_choice == "y":
         disk_uuids = get_disk_uuids(domain_all_content)
         for x in disk_uuids:
             delete_disk(x)
-        print("All attached vDisks has been deleted")
+        print("All attached vDisks has been deleted!")
     if menu_choice == 3:
-        create_disk("67497424-e54b-46f1-b023-4d6d65eac104", 15)    
+        read_input=input("Enter disk size (GB): ")
+        menu_choice=str(read_input)
+        create_and_attach_disk(vm_uuids , data_pool_uuid, menu_choice, "falloc")    
     
 
 print("Exiting Utility..")
 sys.exit()
 
-
-
-
-#attach disk(disk , domain_uuid)
