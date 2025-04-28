@@ -9,17 +9,18 @@ power_state = ["Unknown" , "Off" , "Suspend" , "On"] #3 - on; 2 - suspend; 1 - o
 
 #importing API-KEY from file
 with open("Y:\\py\\integration_key_pod5.txt", "r") as f: # using  '\' (instead of '\\') throws syntax warning
-    api_key = "jwt " + f.read() #actual format for api_key. That was realy obvious DACOM >:C
+    api_key = "jwt " + f.readline() #actual format for api_key. That was realy obvious DACOM >:C
 
 
-#importing VM-UUIDs from file
+#importing ONLY 1st entry in VM-UUIDs file
 with open("Y:\\py\\VM-UUIDs.txt", "r") as f:
-    vm_uuids =  f.read() 
+    vm_uuids =  f.readline().strip('\n')
+
     
 #importing data_pool_uuid from file
 #selected data pool will be used for new disks and alike
 with open("Y:\\py\\data-pool.txt", "r") as f:
-    data_pool_uuid =  f.read()     
+    data_pool_uuid =  f.readline()     
 
 #get domain info "http://10.2.1.52/api/domains/uuid   OR  /domains/{id}/all-content/"
 def get_domain_info(domain_uuid):
@@ -31,9 +32,8 @@ def get_domain_info(domain_uuid):
         return domain_data #returns as dictionary!
     else:
         print(f"Failed to retrieve data {response.status_code}")
-    
-    
-
+        
+        
 def get_domain_all_content(domain_uuid):
     url= f"{base_url}/domains/{domain_uuid}/all-content"
     response = requests.get(url , headers={'Authorization' : api_key})
@@ -63,7 +63,6 @@ def get_disk_uuids(domain_all_content):
     except TypeError:
         print("ERROR: unexpected data format")
         return []
-
 
 
 def get_disk_info(domain_all_content):
@@ -115,7 +114,7 @@ def delete_disk(vdisk_uuid):
 
 def create_and_attach_disk(vm_id, data_pool_uuid, vdisk_size, preallocation):
     domain_name=get_domain_info(domain_uuid)
-    disk_name=domain_name["verbose_name"]+secrets.token_hex(5) #generates unique hex id. this method can generate ~million unique ids
+    disk_name=domain_name["verbose_name"]+"_"+secrets.token_hex(5) #generates unique hex id. this method can generate ~million unique ids
     url = f"{base_url}/domains/{vm_id}/create-attach-vdisk/"
     headers={
     "Authorization" : api_key,
@@ -139,10 +138,12 @@ def create_and_attach_disk(vm_id, data_pool_uuid, vdisk_size, preallocation):
 
 #so-called INT MAIN
 
-domain_uuid = vm_uuids 
+domain_uuid = vm_uuids
+print(domain_uuid)
+print(type(domain_uuid))
 domain_info = get_domain_info(domain_uuid)
 domain_all_content = get_domain_all_content(domain_uuid)
-#vdisk_ids = domain_all_content["vdisks"]
+
 
 #print(domain_info)
 if domain_info:
@@ -152,13 +153,13 @@ if domain_info:
     print(f"\t vDisks: {domain_info["vdisks_count"]}")
     print("-" * 19 , "vDisks Info" , "-" * 19)
     get_disk_info(domain_all_content)
-    #print(domain_all_content)
+
     
 read_input=input("Enter disk edit mode Y / N: ")
 menu_choice=str(read_input)
 if menu_choice == "Y" or menu_choice == "y":
     print("\033[H\033[2J", end="") # clears cmd screen, but saves scrollback buffer
-    print("Select option: \n 1) Delete vDisk by UUID \n 2) Delete ALL vDisks on selected Virtual Machine \n 3) Create Disk")
+    print("Select option: \n 1) Delete vDisk by UUID \n 2) Delete ALL vDisks on selected Virtual Machine \n 3) Create Disk \n 4) Prepare VMs for Courses™")
     read_input=input(">> ")
     menu_choice=int(read_input)
     if menu_choice == 1:
@@ -173,8 +174,43 @@ if menu_choice == "Y" or menu_choice == "y":
     if menu_choice == 3:
         read_input=input("Enter disk size (GB): ")
         menu_choice=str(read_input)
-        create_and_attach_disk(vm_uuids , data_pool_uuid, menu_choice, "falloc")    
+        create_and_attach_disk(vm_uuids , data_pool_uuid, menu_choice, "falloc")
+    if menu_choice == 4:
+       print("#" * 5 , "Preparing VMs for Courses" , "#" * 5) 
+       with open("Y:\\py\\VM-UUIDs.txt", "r") as f:
+            for x in f: # only for removing disks
+               
+                domain_uuid = x.strip('\n')
+                domain_info = get_domain_info(domain_uuid)
+                domain_all_content = get_domain_all_content(domain_uuid)
+
+                if domain_info:
+                    print("=" * 14 , "Virtual Machine Info" , "=" * 15)
+                    print(f"\t VM: {domain_info['verbose_name']}")
+                    print(f"\t Power State: {power_state[domain_info['user_power_state']]}") #translating status code to "pretty name"
+                    print(f"\t vDisks: {domain_info['vdisks_count']}")
+                    print("-" * 19 , "vDisks Info" , "-" * 19)
+                    get_disk_info(domain_all_content)
+                    disk_uuids = get_disk_uuids(domain_all_content)
+                    for y in disk_uuids:
+                        delete_disk(y)
+                    print("All attached vDisks has been deleted!")
+       with open("Y:\\py\\VM-UUIDs.txt", "r") as f:
+            for z in f: # only for creating disks
+                domain_uuid = z.strip('\n')
+                domain_info = get_domain_info(domain_uuid)
+                domain_all_content = get_domain_all_content(domain_uuid)
+                
+                if domain_info:
+                    create_and_attach_disk(domain_uuid , data_pool_uuid, 10, "falloc")
+                    create_and_attach_disk(domain_uuid , data_pool_uuid, 20, "falloc")
+                    create_and_attach_disk(domain_uuid , data_pool_uuid, 20, "falloc")
     
+            
+
+
+
+
 
 print("Exiting Utility..")
 sys.exit()
