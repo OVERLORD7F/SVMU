@@ -4,27 +4,41 @@ import copy
 import sys
 import secrets #for generating unique names
 
-base_url = "http://10.2.1.52/api"
 power_state = ["Unknown" , "Off" , "Suspend" , "On"] #3 - on; 2 - suspend; 1 - off; 0 - unknown
+config_relative_path = "C:\\Users\\n.danilov\\config.txt" # absolute path to cluster config file  
+VM_UUID_relative_path = "C:\\scripts\\VM-UUIDs.txt"  # absolute path to cluster config file  
 
-#importing API-KEY from file
-with open("Y:\\py\\integration_key_pod5.txt", "r") as f: # using  '\' (instead of '\\') throws syntax warning
-    api_key = "jwt " + f.readline() #actual format for api_key. That was realy obvious DACOM >:C
+# edit config or use old 
+read_input=input("Create new config file? (Y / N): ") 
+menu_choice=str(read_input)
+if menu_choice == "Y" or menu_choice == "y":
+    base_url = input("Type ip address: ")
+    api_key = input("Type integration key: ")
+    lines = [base_url, api_key]
+    with open(config_relative_path, "w+") as file:
+        for  line in lines:
+            file.write(line + '\n')
+
+#importing API-KEY and ip address from config file
+with open(config_relative_path, "r") as f: # using  '\' (instead of '\\') throws syntax warning
+    all_lines = f.readlines()  
+    base_url = all_lines[0].strip('\n')
+    api_key = "jwt " + all_lines[1].strip('\n') #actual format for api_key. That was realy obvious DACOM >:C
 
 
 #importing ONLY 1st entry in VM-UUIDs file
-with open("Y:\\py\\VM-UUIDs.txt", "r") as f:
+with open(VM_UUID_relative_path, "r") as f:
     vm_uuids =  f.readline().strip('\n')
 
     
 #importing data_pool_uuid from file
 #selected data pool will be used for new disks and alike
-with open("Y:\\py\\data-pool.txt", "r") as f:
+with open("C:\\scripts\\data-pool.txt", "r") as f:
     data_pool_uuid =  f.readline()     
 
 #get domain info "http://10.2.1.52/api/domains/uuid   OR  /domains/{id}/all-content/"
 def get_domain_info(domain_uuid):
-    url= f"{base_url}/domains/{domain_uuid}"
+    url= f"http://{base_url}/api/domains/{domain_uuid}"
     response = requests.get(url , headers={'Authorization' : api_key})
     
     if response.status_code == 200: #200 - OK
@@ -35,7 +49,7 @@ def get_domain_info(domain_uuid):
         
         
 def get_domain_all_content(domain_uuid):
-    url= f"{base_url}/domains/{domain_uuid}/all-content"
+    url= f"http://{base_url}/api/domains/{domain_uuid}/all-content"
     response = requests.get(url , headers={'Authorization' : api_key})
     if response.status_code == 200: #200 - OK    
         domain_all_data = response.json()
@@ -93,7 +107,7 @@ def get_disk_info(domain_all_content):
 
 def delete_disk(vdisk_uuid):
         
-        url = f"{base_url}/vdisks/{vdisk_uuid}/remove/"
+        url = f"http://{base_url}/api/vdisks/{vdisk_uuid}/remove/"
         headers={
         "Authorization" : api_key,
         "Content-Type" : "application/json",
@@ -115,7 +129,7 @@ def delete_disk(vdisk_uuid):
 def create_and_attach_disk(vm_id, data_pool_uuid, vdisk_size, preallocation):
     domain_name=get_domain_info(domain_uuid)
     disk_name=domain_name["verbose_name"]+"_"+secrets.token_hex(5) #generates unique hex id. this method can generate ~million unique ids
-    url = f"{base_url}/domains/{vm_id}/create-attach-vdisk/"
+    url = f"http://{base_url}/api/domains/{vm_id}/create-attach-vdisk/"
     headers={
     "Authorization" : api_key,
     "Content-Type" : "application/json",
@@ -140,7 +154,7 @@ def create_and_attach_disk(vm_id, data_pool_uuid, vdisk_size, preallocation):
 
 domain_uuid = vm_uuids
 print(domain_uuid)
-print(type(domain_uuid))
+print((domain_uuid))
 domain_info = get_domain_info(domain_uuid)
 domain_all_content = get_domain_all_content(domain_uuid)
 
@@ -148,9 +162,9 @@ domain_all_content = get_domain_all_content(domain_uuid)
 #print(domain_info)
 if domain_info:
     print("=" * 14 , "Virtual Machine Info" , "=" * 15)
-    print(f"\t VM: {domain_info["verbose_name"]}")
-    print(f"\t Power State: {power_state[domain_info["user_power_state"]]}") #translating status code to "pretty name"
-    print(f"\t vDisks: {domain_info["vdisks_count"]}")
+    print(f"\t VM: {domain_info['verbose_name']}")
+    print(f"\t Power State: {power_state[domain_info['user_power_state']]}") #translating status code to "pretty name"
+    print(f"\t vDisks: {domain_info['vdisks_count']}")
     print("-" * 19 , "vDisks Info" , "-" * 19)
     get_disk_info(domain_all_content)
 
@@ -177,7 +191,7 @@ if menu_choice == "Y" or menu_choice == "y":
         create_and_attach_disk(vm_uuids , data_pool_uuid, menu_choice, "falloc")
     if menu_choice == 4:
        print("#" * 5 , "Preparing VMs for Courses" , "#" * 5) 
-       with open("Y:\\py\\VM-UUIDs.txt", "r") as f:
+       with open(VM_UUID_relative_path, "r") as f:
             for x in f: # only for removing disks
                
                 domain_uuid = x.strip('\n')
@@ -195,7 +209,7 @@ if menu_choice == "Y" or menu_choice == "y":
                     for y in disk_uuids:
                         delete_disk(y)
                     print("All attached vDisks has been deleted!")
-       with open("Y:\\py\\VM-UUIDs.txt", "r") as f:
+       with open(VM_UUID_relative_path, "r") as f:
             for z in f: # only for creating disks
                 domain_uuid = z.strip('\n')
                 domain_info = get_domain_info(domain_uuid)
