@@ -12,32 +12,39 @@ VM_UUID_relative_path = "Y:\\py\\VM-UUIDs.txt"
 
 
 
-#importing API-KEY and ip address from config file
+#importing API-KEY / IP / DATA POOL UUID from config
 with open(config_relative_path, "r") as f: # using  '\' (instead of '\\') throws syntax warning
     all_lines = f.readlines()  
     base_url = all_lines[0].strip('\n')
     api_key = "jwt " + all_lines[1].strip('\n') #actual format for api_key. That was realy obvious DACOM >:C
-    #data_pool_uuid = all_lines[2].strip('\n')
-
-#importing ONLY 1st entry in VM-UUIDs file
-with open(VM_UUID_relative_path, "r") as f:
-   vm_uuids =  f.readline().strip('\n')
-
+    data_pool_uuid = all_lines[2].strip('\n')
+    #print(f"data-pool-uuid - {data_pool_uuid}")
     
-#importing data_pool_uuid from file
-#selected data pool will be used for new disks and alike
-with open("Y:\\py\\data-pool.txt", "r") as f:
-    data_pool_uuid =  f.readline()     
+
+#importing VM-UUIDs
+vm_uuids = [] 
+with open(config_relative_path, "r") as f:
+    for i in range(3): # ignoring 2 first lines (IP, API-KEY)
+        next(f)
+    for line in f:                
+        line = line.strip('\n')
+        if line: # checks if line is empty (EOF). ESSENTIAL, DO NOT REMOVE
+            vm_uuids.append(line)
+    print(f"vm uuids {vm_uuids}")
+    
+
+   
 
 def config_edit():
     read_input=input("Create new config file? (Y / N): ") 
     menu_choice=str(read_input)
     if menu_choice == "Y" or menu_choice == "y":
-        base_url = input("Type ip address: ")
-        api_key = input("Type integration key: ")
-        lines = [base_url, api_key]
+        base_url = input("Type SpaceVM Controller IP: ")
+        api_key = input("Type your API Key: ")
+        data_pool_uuid = input("Type Data pool uuid you wish to use: ")
+        lines = [base_url, api_key, data_pool_uuid]
         with open(config_relative_path, "w+") as file:
-            for  line in lines:
+            for line in lines:
                 file.write(line + '\n')
         
         
@@ -205,7 +212,7 @@ def vm_info (vm_uuids):
 
 #so-called INT MAIN
 menu_choice=0
-while(menu_choice != ""):    
+while(menu_choice != ""):    #main menu loop
     read_input=input("\nUitility Main Menu: \n1) Edit config \n2) Enter disk edit mode \n3) Show breif cluster overview \n4) Show VM info \n>>> ")
     menu_choice=str(read_input)
 
@@ -231,48 +238,43 @@ while(menu_choice != ""):
             create_and_attach_disk(vm_uuids , data_pool_uuid, menu_choice, "falloc")
         if menu_choice == 4:
             print("#" * 5 , "Preparing VMs for Courses" , "#" * 5) 
-            with open(VM_UUID_relative_path, "r") as f:
-                for x in f: # only for removing disks
-               
-                    domain_uuid = x.strip('\n')
-                    domain_info = get_domain_info(domain_uuid)
-                    domain_all_content = get_domain_all_content(domain_uuid)
-
-                    if domain_info:
-                        print("=" * 14 , "Virtual Machine Info" , "=" * 15)
-                        print(f"\t VM: {domain_info['verbose_name']}")
-                        print(f"\t Power State: {power_state[domain_info['user_power_state']]}") #translating status code to "pretty name"
-                        print(f"\t vDisks: {domain_info['vdisks_count']}")
-                        print("-" * 19 , "vDisks Info" , "-" * 19)
-                        get_disk_info(domain_all_content)
-                        disk_uuids = get_disk_uuids(domain_all_content)
-                        for y in disk_uuids:
-                            delete_disk(y)
-                        print("All attached vDisks has been deleted!")
-            with open(VM_UUID_relative_path, "r") as f:
-                for z in f: # only for creating disks
-                    domain_uuid = z.strip('\n')
-                    domain_info = get_domain_info(domain_uuid)
-                    domain_all_content = get_domain_all_content(domain_uuid)
-                
-                    if domain_info:
-                        create_and_attach_disk(domain_uuid , data_pool_uuid, 10, "falloc")
-                        create_and_attach_disk(domain_uuid , data_pool_uuid, 20, "falloc")
-                        create_and_attach_disk(domain_uuid , data_pool_uuid, 20, "falloc")
+            #with open(VM_UUID_relative_path, "r") as f:
+            for x in vm_uuids: # only for removing disks
+                domain_uuid = x.strip('\n')
+                domain_info = get_domain_info(domain_uuid)
+                domain_all_content = get_domain_all_content(domain_uuid)
+                if domain_info:
+                    print("=" * 14 , "Virtual Machine Info" , "=" * 15)
+                    print(f"\t VM: {domain_info['verbose_name']}")
+                    print(f"\t Power State: {power_state[domain_info['user_power_state']]}") #translating status code to "pretty name"
+                    print(f"\t vDisks: {domain_info['vdisks_count']}")
+                    print("-" * 19 , "vDisks Info" , "-" * 19)
+                    get_disk_info(domain_all_content)
+                    disk_uuids = get_disk_uuids(domain_all_content)
+                    for y in disk_uuids:
+                        delete_disk(y)
+                    print("All attached vDisks has been deleted!")
+            #with open(VM_UUID_relative_path, "r") as f:
+            for z in vm_uuids: # only for creating disks
+                domain_uuid = z.strip('\n')
+                domain_info = get_domain_info(domain_uuid)
+                domain_all_content = get_domain_all_content(domain_uuid)
+                if domain_info:
+                    create_and_attach_disk(domain_uuid , data_pool_uuid, 10, "falloc")
+                    create_and_attach_disk(domain_uuid , data_pool_uuid, 20, "falloc")
+                    create_and_attach_disk(domain_uuid , data_pool_uuid, 20, "falloc")
     
     if menu_choice == "3":
         cluster_info()
     
     if menu_choice == "4":
-        with open(config_relative_path , 'r') as f:
-            for i in range(2): # ignoring 2 first lines (IP, API-KEY)
-                next(f)
-            for line in f:
-                #print(line.strip('\n'))
-                vm_info(line.strip()) # strip with no args - removes '\n' and spaces
+        print("\033[H\033[2J", end="")
+        print(f"vm uuids - {vm_uuids}")
+        for x in vm_uuids:
+            vm_info(x)
                  
                  
-                 # HOW - TO EOF ?????   
+                 
 
 
 
