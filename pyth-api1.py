@@ -1,15 +1,10 @@
 import requests
-import json
-import copy
 import sys
 import secrets #for generating unique names
 
 
 power_state = ["Unknown" , "Off" , "Suspend" , "On"] #3 - on; 2 - suspend; 1 - off; 0 - unknown
 config_relative_path = "Y:\\py\\config.txt" # absolute path to cluster config file  
-#VM_UUID_relative_path = "Y:\\py\\VM-UUIDs.txt"  
-
-
 
 
 #importing API-KEY / IP / DATA POOL UUID from config
@@ -18,7 +13,6 @@ with open(config_relative_path, "r") as f: # using  '\' (instead of '\\') throws
     base_url = all_lines[0].strip('\n')
     api_key = "jwt " + all_lines[1].strip('\n') #actual format for api_key. That was realy obvious DACOM >:C
     data_pool_uuid = all_lines[2].strip('\n')
-    #print(f"data-pool-uuid - {data_pool_uuid}")
     
 
 #importing VM-UUIDs
@@ -30,11 +24,7 @@ with open(config_relative_path, "r") as f:
         line = line.strip('\n')
         if line: # checks if line is empty (EOF). ESSENTIAL, DO NOT REMOVE
             vm_uuids.append(line)
-    #print(f"vm uuids {vm_uuids}")
     
-
-   
-
 def config_edit():
     read_input=input("Create new config file? (Y / N): ") 
     menu_choice=str(read_input)
@@ -56,7 +46,6 @@ def config_edit():
                 file.write(vm_input + '\n')        
 
 
-
 def cluster_info(): #output short clusters overview 
     url= f"http://{base_url}/api/clusters"
     response = requests.get(url , headers={'Authorization' : api_key})
@@ -75,12 +64,9 @@ def cluster_info(): #output short clusters overview
             print(f"Total CPU: {x['cpu_count']} Cores || CPU Usage: {round(x['cpu_used_percent_user'] , 2)}%")#output is rounded by 2
             print(f"Total RAM: {int(x['memory_count']/1024)}GB    || RAM Usage: {round(x['mem_used_percent_user'] , 2)}%") #RAM pretty output = mb-to-gb + set 'int' to remove .0
             
-            print("-" * 51) 
-        
+            print("-" * 51)     
     else:
         print(f"Failed to retrieve data {response.status_code}")   
-
-
 
 #get domain info "http://10.2.1.52/api/domains/uuid   OR  /domains/{id}/all-content/"
 def get_domain_info(domain_uuid):
@@ -151,8 +137,7 @@ def get_disk_info(domain_all_content):
             print("ERROR: failed to retrieve vdisk data.")
 
 
-def delete_disk(vdisk_uuid):
-        
+def delete_disk(vdisk_uuid):      
         url = f"http://{base_url}/api/vdisks/{vdisk_uuid}/remove/"
         headers={
         "Authorization" : api_key,
@@ -181,7 +166,7 @@ def create_and_attach_disk(vm_id, data_pool_uuid, vdisk_size, preallocation):
     "Content-Type" : "application/json",
     }
     payload= {
-    "verbose_name": disk_name, #UNIQUE NAME !!!!!!!!!!
+    "verbose_name": disk_name,
     "preallocation": preallocation,
     "size": vdisk_size,
     "datapool": data_pool_uuid,
@@ -198,7 +183,6 @@ def create_and_attach_disk(vm_id, data_pool_uuid, vdisk_size, preallocation):
 
 def vm_info (vm_uuids): 
     domain_uuid = vm_uuids
-    #print(domain_uuid)
     domain_info = get_domain_info(domain_uuid)
     domain_all_content = get_domain_all_content(domain_uuid)
 
@@ -246,7 +230,6 @@ while(menu_choice != ""):    #main menu loop
             create_and_attach_disk(vm_uuids[select_uuids] , data_pool_uuid, vdisk_size, "falloc")
         if menu_choice == 4:
             print("#" * 5 , "Preparing VMs for Courses" , "#" * 5) 
-            #with open(VM_UUID_relative_path, "r") as f:
             for x in vm_uuids: # only for removing disks
                 domain_uuid = x.strip('\n')
                 domain_info = get_domain_info(domain_uuid)
@@ -262,7 +245,6 @@ while(menu_choice != ""):    #main menu loop
                     for y in disk_uuids:
                         delete_disk(y)
                     print("All attached vDisks has been deleted!")
-            #with open(VM_UUID_relative_path, "r") as f:
             for z in vm_uuids: # only for creating disks
                 domain_uuid = z.strip('\n')
                 domain_info = get_domain_info(domain_uuid)
