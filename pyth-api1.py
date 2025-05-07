@@ -7,7 +7,7 @@ import secrets #for generating unique names
 
 power_state = ["Unknown" , "Off" , "Suspend" , "On"] #3 - on; 2 - suspend; 1 - off; 0 - unknown
 config_relative_path = "Y:\\py\\config.txt" # absolute path to cluster config file  
-VM_UUID_relative_path = "Y:\\py\\VM-UUIDs.txt"  
+#VM_UUID_relative_path = "Y:\\py\\VM-UUIDs.txt"  
 
 
 
@@ -30,7 +30,7 @@ with open(config_relative_path, "r") as f:
         line = line.strip('\n')
         if line: # checks if line is empty (EOF). ESSENTIAL, DO NOT REMOVE
             vm_uuids.append(line)
-    print(f"vm uuids {vm_uuids}")
+    #print(f"vm uuids {vm_uuids}")
     
 
    
@@ -136,7 +136,7 @@ def get_disk_info(domain_all_content):
     
     # check for disks
     if not disks:
-        print("No 'disks' field in recieved data. Probably VM does not have any attached disks?")
+        print("No 'disks' field in recieved data. \nProbably VM does not have any attached disks?")
         return
     
     # Print info for each disk
@@ -173,7 +173,7 @@ def delete_disk(vdisk_uuid):
             return False
 
 def create_and_attach_disk(vm_id, data_pool_uuid, vdisk_size, preallocation):
-    domain_name=get_domain_info(domain_uuid)
+    domain_name=get_domain_info(vm_id)
     disk_name=domain_name["verbose_name"]+"_"+secrets.token_hex(5) #generates unique hex id. this method can generate ~million unique ids
     url = f"http://{base_url}/api/domains/{vm_id}/create-attach-vdisk/"
     headers={
@@ -228,14 +228,22 @@ while(menu_choice != ""):    #main menu loop
             vdisk_uuid=str(read_input)
             delete_disk(vdisk_uuid)      
         if menu_choice == 2:
+            print(vm_uuids)
+            select_uuids=int(input("Select VM to delete disks from. \n Type VM uuid index number (from list above) to select: ")) - 1
+            print(f"actual selected uuid = {select_uuids}")
+            print(vm_uuids[select_uuids])  
+            domain_all_content = get_domain_all_content(vm_uuids[select_uuids])
             disk_uuids = get_disk_uuids(domain_all_content)
             for x in disk_uuids:
                 delete_disk(x)
             print("All attached vDisks has been deleted!")
         if menu_choice == 3:
-            read_input=input("Enter disk size (GB): ")
-            menu_choice=str(read_input)
-            create_and_attach_disk(vm_uuids , data_pool_uuid, menu_choice, "falloc")
+            vdisk_size=str(input("Enter disk size (GB): "))
+            print(vm_uuids)
+            select_uuids=int(input("Select VM to attach new disk. \n Type VM uuid index number (from list above) to select: ")) - 1
+            print(f"actual selected uuid = {select_uuids}")
+            print(vm_uuids[select_uuids])
+            create_and_attach_disk(vm_uuids[select_uuids] , data_pool_uuid, vdisk_size, "falloc")
         if menu_choice == 4:
             print("#" * 5 , "Preparing VMs for Courses" , "#" * 5) 
             #with open(VM_UUID_relative_path, "r") as f:
@@ -272,13 +280,6 @@ while(menu_choice != ""):    #main menu loop
         print(f"vm uuids - {vm_uuids}")
         for x in vm_uuids:
             vm_info(x)
-                 
-                 
-                 
-
-
-
-
 
 
 print("Exiting Utility..")
