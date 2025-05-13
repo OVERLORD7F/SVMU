@@ -2,6 +2,8 @@ import sys
 import os
 from cluster_api import *
 from domain_api import * 
+from data_pools_api import *
+from vm_info_short import *
 
 power_state = ["Unknown" , "Off" , "Suspend" , "On"] #3 - on; 2 - suspend; 1 - off; 0 - unknown
 
@@ -120,6 +122,11 @@ while(menu_choice != ""):    #main menu loop
         for x in vm_uuids:
             vm_info(base_url , api_key , x)
 
+    if menu_choice == "5":
+        data_pools(base_url , api_key)
+
+    if menu_choice == "6":
+        vm_info_short(base_url , api_key)
 
 print("Exiting Utility..")
 sys.exit()
