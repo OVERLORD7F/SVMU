@@ -29,18 +29,21 @@ def config_edit():
             while (vm_input != ""):
                 vm_input = input(">> ")
                 file.write(vm_input + '\n') 
-
+            print("UUIDs has been written in config")
+            print("\nConfiguration completed!")
 if os.path.exists(config_relative_path) and os.path.getsize(config_relative_path) > 0: #check if file exists and not empty
-#importing API-KEY / IP / DATA POOL UUID from config
-    with open(config_relative_path, "r") as f: # using  '\' (instead of '\\') throws syntax warning
-        all_lines = f.readlines()  
-        base_url = all_lines[0].strip('\n')
-        api_key = "jwt " + all_lines[1].strip('\n') #actual format for api_key. That was realy obvious DACOM >:C
-        data_pool_uuid = all_lines[2].strip('\n')
+    pass #do nothing
 else:
     print("Config file was not found or empty.. ")
     config_edit()
-   
+
+#importing API-KEY / IP / DATA POOL UUID from config
+with open(config_relative_path, "r") as f:
+    all_lines = f.readlines()  
+    base_url = all_lines[0].strip('\n')
+    api_key = "jwt " + all_lines[1].strip('\n') #actual format for api_key. That was realy obvious DACOM >:C
+    data_pool_uuid = all_lines[2].strip('\n')
+
 #importing VM-UUIDs
 vm_uuids = [] 
 with open(config_relative_path, "r") as f:
@@ -55,13 +58,22 @@ with open(config_relative_path, "r") as f:
 #so-called INT MAIN
 menu_choice=0
 while(menu_choice != ""):    #main menu loop
-    read_input=input("\nUitility Main Menu: \n1) Edit config \n2) Enter disk edit mode \n3) Show breif cluster overview \n4) Show VM info \n>>> ")
+    read_input=input("\nUitility Main Menu: \n1) Manage utility config \n2) Enter disk edit mode \n3) Show breif cluster overview \n4) Show VM info \n>>> ")
     menu_choice=str(read_input)
 
     if menu_choice == "1":
-        config_edit()
-    if menu_choice == "2":
         print("\033[H\033[2J", end="") # clears cmd screen, but saves scrollback buffer
+        print("1) Show current configuration \n2) Change configuraion")
+        read_input=input(">> ")
+        menu_choice=int(read_input)
+        if menu_choice == 1:
+            print("Current configuration:\n")
+            with open(config_relative_path, "r") as f:
+                print(f.read())
+        if menu_choice == 2:
+            config_edit()
+    if menu_choice == "2":
+        print("\033[H\033[2J", end="")
         print("Select option: \n 1) Delete vDisk by UUID \n 2) Delete ALL vDisks on selected Virtual Machine \n 3) Create Disk \n 4) Prepare VMs for Courses™")
         read_input=input(">> ")
         menu_choice=int(read_input)
