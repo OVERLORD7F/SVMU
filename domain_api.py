@@ -15,7 +15,7 @@ def get_domain_info(base_url , api_key , domain_uuid):
     
     if response.status_code == 200: #200 - OK
         domain_data = response.json()
-        return domain_data #returns as dictionary!
+        return domain_data #returns as dictionary! 
     else:
         print(f"Failed to retrieve data {response.status_code}")
 

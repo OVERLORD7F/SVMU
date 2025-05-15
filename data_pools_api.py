@@ -21,6 +21,7 @@ def data_pools(base_url , api_key): #output data pool info
             print(f"status: {x['status']}")
             print(f"size:  {round((x['size'] / 1024), 1)}Gb")
             print("-" * 44)
+            #
         
     else:
         print(f"Failed to retrieve data {response.status_code}")  

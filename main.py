@@ -130,7 +130,7 @@ while(menu_choice != ""):    #main menu loop
         cluster_info(base_url , api_key)
     
     if menu_choice == "4":
-        print("\033[H\033[2J", end="") 
+        print("\033[H\033[2J", end="")
         for x in vm_uuids:
             vm_info(base_url , api_key , x)
 

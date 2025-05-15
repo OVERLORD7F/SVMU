@@ -16,7 +16,7 @@ def vm_info_short(base_url , api_key): #output data pool info
         for x in results_vm_info_short:
             print(" "*16,f"VM {x['verbose_name']}")
             print(f"UID: {x['id']}")
-            print("-" * 41) 
+            print("-" * 41)
         
     else:
         print(f"Failed to retrieve data {response.status_code}")  
