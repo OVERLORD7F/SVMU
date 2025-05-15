@@ -16,10 +16,10 @@ def data_pools(base_url , api_key): #output data pool info
         for x in results_data_pools_info:
             print(" "*14,"Data pool info")
             print(f"\nName: {x['verbose_name']}")
-            print(f"\nUID: {x['id']}")
-            print(f"\ntype: {x['type']}")
-            print(f"\nstatus: {x['status']}")
-            print(f"\nsize:  {round((x['size'] / 1024), 1)}Gb")
+            print(f"UID: {x['id']}")
+            print(f"type: {x['type']}")
+            print(f"status: {x['status']}")
+            print(f"size:  {round((x['size'] / 1024), 1)}Gb")
             print("-" * 44) 
         
     else:
