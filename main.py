@@ -138,7 +138,6 @@ while(menu_choice != ""):    #main menu loop
         data_pools(base_url , api_key)
 
     if menu_choice == "6":
-        
         vm_info_short(base_url , api_key)
 
 print("Exiting Utility..")
