@@ -14,7 +14,7 @@ def vm_info_short(base_url , api_key): #output data pool info
         print(f"\nVM total: {vm_info_short['count']}")
         print("-" * 41)         
         for x in results_vm_info_short:
-            print(f"VM: {x['verbose_name']}")
+            print(f"VM: {x['verbose_name']} ")
             print(f"UID: {x['id']}")
             print("-" * 41)
         
