@@ -111,6 +111,26 @@ def vm_info(base_url , api_key , vm_uuids):
         get_disk_info(domain_all_content)
 
 
+import requests
+
+def vm_info_short(base_url , api_key): #output data pool info 
+    url= f"http://{base_url}//api/domains/"
+    response = requests.get(url , headers={'Authorization' : api_key})
+   
+    if response.status_code == 200:
+        vm_info_short = response.json()
+        results_vm_info_short = vm_info_short['results']
+
+        print(f"\nShort VM overview | Total: {vm_info_short['count']}")
+        print("=" * 43)         
+        for x in results_vm_info_short:
+            print(f"  VM: {x['verbose_name']}")
+            print(f"UUID: {x['id']}")
+            print("-" * 43) 
+        
+    else:
+        print(f"Failed to retrieve data {response.status_code}")  
+
 def create_and_attach_disk(base_url , api_key , vm_id, data_pool_uuid, vdisk_size, preallocation):
     domain_name=get_domain_info(base_url , api_key , vm_id)
     disk_name=domain_name["verbose_name"]+"_"+secrets.token_hex(5) #generates unique hex id. this method can generate ~million unique ids
