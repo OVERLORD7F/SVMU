@@ -1,5 +1,3 @@
-
-#from main import base_url , api_key , requests
 import requests
 
 def data_pools(base_url , api_key): #output data pool info 
