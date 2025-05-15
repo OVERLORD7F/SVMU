@@ -1,5 +1,3 @@
-
-#from main import base_url , api_key , requests
 import requests
 
 def data_pools(base_url , api_key): #output data pool info 
@@ -14,13 +12,10 @@ def data_pools(base_url , api_key): #output data pool info
         print(f"\nData pools total: {data_pools['count']}")
         print("-" * 44)         
         for x in results_data_pools_info:
-            print(" "*14,"Data pool info")
-            print(f"\nName: {x['verbose_name']}")
+            print(f"\nData pool: {x['verbose_name']} ({x['status']})")
+            print(f"type: {x['type']} | Used: {round((x['free_space']/1024), 1)} Gb/{round((x['size'] / 1024), 1)} Gb")
             print(f"UID: {x['id']}")
-            print(f"type: {x['type']}")
-            print(f"status: {x['status']}")
-            print(f"size:  {round((x['size'] / 1024), 1)}Gb")
             print("-" * 44)
         
     else:
-        print(f"Failed to retrieve data {response.status_code}")  
+        print(f"Failed to retrieve data {response.status_code} ")
