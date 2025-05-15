@@ -111,7 +111,6 @@ def vm_info(base_url , api_key , vm_uuids):
         get_disk_info(domain_all_content)
 
 
-
 def create_and_attach_disk(base_url , api_key , vm_id, data_pool_uuid, vdisk_size, preallocation):
     domain_name=get_domain_info(base_url , api_key , vm_id)
     disk_name=domain_name["verbose_name"]+"_"+secrets.token_hex(5) #generates unique hex id. this method can generate ~million unique ids

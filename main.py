@@ -5,6 +5,8 @@ from config_data_import import *
 
 from cluster_api import *
 from domain_api import * 
+from data_pools_api import *
+from vm_info_short import *
 
 power_state = ["Unknown" , "Off" , "Suspend" , "On"] #3 - on; 2 - suspend; 1 - off; 0 - unknown
 
@@ -12,7 +14,6 @@ power_state = ["Unknown" , "Off" , "Suspend" , "On"] #3 - on; 2 - suspend; 1 - o
 base_dir = os.getcwd() # Use the current directory as fallback
 config_relative_path = os.path.join(base_dir, 'config.txt')
 
-#config_relative_path = "Y:\\py\\SpaceVM_VM_Utility\\config.txt" 
 
 def config_edit():
     read_input=input("Create new config file? (Y / N): ") 
@@ -82,10 +83,12 @@ while(menu_choice != ""):    #main menu loop
         print("Select option: \n 1) Delete vDisk by UUID \n 2) Delete ALL vDisks on selected Virtual Machine \n 3) Create Disk \n 4) Prepare VMs for Courses™")
         read_input=input(">> ")
         menu_choice=int(read_input)
+
         if menu_choice == 1:
             read_input=input("Input vDisk uuid to delete: ")
             vdisk_uuid=str(read_input)
-            delete_disk(base_url , api_key , vdisk_uuid)      
+            delete_disk(base_url , api_key , vdisk_uuid)
+
         if menu_choice == 2:
             print(vm_uuids)
             select_uuids=int(input("Select VM to delete disks from. \n Type VM uuid index number (from list above) to select: ")) - 1
@@ -94,11 +97,13 @@ while(menu_choice != ""):    #main menu loop
             for x in disk_uuids:
                 delete_disk(base_url , api_key , x)
             print("All attached vDisks has been deleted!")
+
         if menu_choice == 3:
             vdisk_size=str(input("Enter disk size (GB): "))
             print(vm_uuids)
             select_uuids=int(input("Select VM to attach new disk. \n Type VM uuid index number (from list above) to select: ")) - 1
             create_and_attach_disk(vm_uuids[select_uuids] , data_pool_uuid, vdisk_size, "falloc")
+            
         if menu_choice == 4:
             print("#" * 5 , "Preparing VMs for Courses" , "#" * 5) 
             for x in vm_uuids: # only for removing disks
@@ -129,10 +134,15 @@ while(menu_choice != ""):    #main menu loop
         cluster_info(base_url , api_key)
     
     if menu_choice == "4":
-        print("\033[H\033[2J", end="")
+        print("\033[H\033[2J", end="") 
         for x in vm_uuids:
             vm_info(base_url , api_key , x)
 
+    if menu_choice == "5":
+        data_pools(base_url , api_key)
+        
+    if menu_choice == "6":
+        vm_info_short(base_url , api_key)
 
 print("Exiting Utility..")
 sys.exit()
