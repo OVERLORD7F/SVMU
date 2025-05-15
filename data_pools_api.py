@@ -21,4 +21,4 @@ def data_pools(base_url , api_key): #output data pool info
             #
         
     else:
-        print(f"Failed to retrieve data {response.status_code} ")  
+        print(f"Failed to retrieve data {response.status_code}")  
