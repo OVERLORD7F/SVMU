@@ -1,5 +1,8 @@
 import sys
 import os
+
+from config_data_import import *
+
 from cluster_api import *
 from domain_api import * 
 
@@ -38,22 +41,24 @@ else:
     config_edit()
 
 #importing API-KEY / IP / DATA POOL UUID from config
+threelines = import_threelines(config_relative_path)
+print(f"3 lines: {threelines}")
+base_url=threelines[0]
+api_key=threelines[1]
+data_pool_uuid=threelines[2]
+
+
+'''
 with open(config_relative_path, "r") as f:
     all_lines = f.readlines()  
     base_url = all_lines[0].strip('\n')
     api_key = "jwt " + all_lines[1].strip('\n') #actual format for api_key. That was realy obvious DACOM >:C
     data_pool_uuid = all_lines[2].strip('\n')
+'''
 
 #importing VM-UUIDs
-vm_uuids = [] 
-with open(config_relative_path, "r") as f:
-    for i in range(3): # ignoring 2 first lines (IP, API-KEY)
-        next(f)
-    for line in f:                
-        line = line.strip('\n')
-        if line: # checks if line is empty (EOF). ESSENTIAL, DO NOT REMOVE
-            vm_uuids.append(line)
-
+vm_uuids = import_vm_uuid(config_relative_path)
+print(f"vm uuids: {vm_uuids}")
 
 #so-called INT MAIN
 menu_choice=0
@@ -84,8 +89,6 @@ while(menu_choice != ""):    #main menu loop
         if menu_choice == 2:
             print(vm_uuids)
             select_uuids=int(input("Select VM to delete disks from. \n Type VM uuid index number (from list above) to select: ")) - 1
-            print(f"actual selected uuid = {select_uuids}")
-            print(vm_uuids[select_uuids])  
             domain_all_content = get_domain_all_content(base_url , api_key , vm_uuids[select_uuids])
             disk_uuids = get_disk_uuids(base_url , api_key , domain_all_content)
             for x in disk_uuids:
@@ -95,8 +98,6 @@ while(menu_choice != ""):    #main menu loop
             vdisk_size=str(input("Enter disk size (GB): "))
             print(vm_uuids)
             select_uuids=int(input("Select VM to attach new disk. \n Type VM uuid index number (from list above) to select: ")) - 1
-            print(f"actual selected uuid = {select_uuids}")
-            print(vm_uuids[select_uuids])
             create_and_attach_disk(vm_uuids[select_uuids] , data_pool_uuid, vdisk_size, "falloc")
         if menu_choice == 4:
             print("#" * 5 , "Preparing VMs for Courses" , "#" * 5) 
