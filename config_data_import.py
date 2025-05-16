@@ -1,3 +1,20 @@
+def config_menu(config_relative_path):
+        print("\033[H\033[2J", end="") # clears cmd screen, but saves scrollback buffer
+        print("###      Utility Configuration       ###\n")
+        print("1) Show current configuration")
+        print("2) Change configuraion")
+        print("\nENTER - return to Utility Main Menu ")
+        sub_choice=str(input("\n>>> "))
+
+        if sub_choice == "1":
+            config_show(config_relative_path)
+        if sub_choice == "2":
+            config_edit(config_relative_path)
+
+def config_show(config_relative_path):
+    print("Current configuration:\n")
+    with open(config_relative_path, "r") as f:
+        print(f.read())
 
 def import_vm_uuid(config_relative_path):
     vm_uuids = []
@@ -27,17 +44,22 @@ def config_edit(config_relative_path):
     if menu_choice == "Y" or menu_choice == "y":
         base_url = input("Type SpaceVM Controller IP: ")
         api_key = input("Type your API Key: ")
-        data_pool_uuid = input("Type Data pool uuid you wish to use: ")
+        data_pool_uuid = input("Type Data Pool UUID you wish to use: ")
         lines = [base_url, api_key, data_pool_uuid]
         with open(config_relative_path, "w+") as file:
             for line in lines:
                 file.write(line + '\n')
                
-        print("Type VM-UUID (input ENTER to stop)")
+        print("Type VM UUIDs one by one (input ENTER to stop)")
         with open(config_relative_path, "a") as file: #appends new content at the end without modifying the existing data
             vm_input="test"
             while (vm_input != ""):
                 vm_input = input(">> ")
                 file.write(vm_input + '\n') 
-            print("UUIDs has been written in config")
+            print("VM UUIDs has been written in config.")
             print("\nConfiguration completed!")
+            input("Press ENTER to continue..")
+            print("\033[H\033[2J", end="")
+
+
+

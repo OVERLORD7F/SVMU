@@ -147,7 +147,7 @@ def create_and_attach_disk(base_url , api_key , vm_id, data_pool_uuid, vdisk_siz
     }    
     response = requests.post(url , headers=headers, json=payload)
     if response.status_code == 200:
-        print(f"\nvDisk {disk_name} - {vdisk_size}GB has been created")
+        print(f"vDisk {disk_name} - {vdisk_size}GB has been created and attached to VM - {vm_id}")
         return True
     else:
         print(f"ERROR creating vDisk :\n {response.status_code} - {response.text}")
