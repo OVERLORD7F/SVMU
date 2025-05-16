@@ -3,7 +3,6 @@
 
 import requests
 import secrets #for generating unique names
-#from main import power_state 
 
 
 power_state = ["Unknown" , "Off" , "Suspend" , "On"] #3 - on; 2 - suspend; 1 - off; 0 - unknown
@@ -153,3 +152,16 @@ def create_and_attach_disk(base_url , api_key , vm_id, data_pool_uuid, vdisk_siz
     else:
         print(f"ERROR creating vDisk :\n {response.status_code} - {response.text}")
         return False  
+
+#checks for power on.     
+def vm_check_power(base_url , api_key , vm_uuids):
+    domain_info = get_domain_info(base_url , api_key , vm_uuids)
+
+    if domain_info:
+        #3 - on; 2 - suspend; 1 - off; 0 - unknown
+        if domain_info['user_power_state'] == 3 or domain_info['user_power_state'] == 2 : #if ON or SUSPEND
+            raise Exception(f"VM - {vm_uuids} IS POWERED ON! \n Turn it off and relaunch Utility.")
+        if domain_info['user_power_state'] == 0:  
+            raise Exception(f"VM - {vm_uuids} is UNAVAILABLE! \n Have fun figuring that out D:")
+        if domain_info['user_power_state'] == 1:
+            print(f"VM - {vm_uuids} Power check passed!")

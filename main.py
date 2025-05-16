@@ -4,11 +4,8 @@ from cluster_api import *
 from domain_api import * 
 from data_pools_api import *
 
-#config.txt in the same directory with main.py
-config_relative_path = os.path.join(os.getcwd() , 'config.txt')
-print(config_relative_path)
-#check if config exists and not empty            
-if os.path.exists(config_relative_path) and os.path.getsize(config_relative_path) > 0: 
+config_relative_path = os.path.join(os.getcwd() , 'config.txt')  #config.txt in the same directory with main.py      
+if os.path.exists(config_relative_path) and os.path.getsize(config_relative_path) > 0: #check if config exists and not empty   
     pass #do nothing
 else:
     print("Config file was not found or empty.. ")
@@ -53,6 +50,7 @@ while(menu_choice != ""):    #main menu loop
         if sub_choice == "2":
             print(vm_uuids)
             select_uuids=int(input("Select VM to delete disks from. \n Type VM uuid index number (from list above) to select: ")) - 1
+            vm_check_power(vm_uuids[select_uuids]) #power on check
             domain_all_content = get_domain_all_content(base_url , api_key , vm_uuids[select_uuids])
             disk_uuids = get_disk_uuids(base_url , api_key , domain_all_content)
             for x in disk_uuids:
@@ -66,6 +64,9 @@ while(menu_choice != ""):    #main menu loop
             
         if sub_choice == "4":
             print("#" * 5 , "Preparing VMs for Courses" , "#" * 5) 
+            for y in vm_uuids: #power-on check
+                domain_uuid = y.strip('\n')
+                vm_check_power(base_url , api_key , domain_uuid)
             for x in vm_uuids: # only for removing disks
                 domain_uuid = x.strip('\n')
                 domain_info = get_domain_info(base_url , api_key , domain_uuid)
@@ -94,5 +95,5 @@ while(menu_choice != ""):    #main menu loop
     if menu_choice == "5":
         data_pools(base_url , api_key)
     if menu_choice == "6":
-        vm_info_short(base_url , api_key)
+        vm_info_short(base_url , api_key)       
 print("Exiting Utility..")
