@@ -1,9 +1,10 @@
 # functions for working with domain-api
-
-
 import requests
 import secrets #for generating unique names
 
+from rich.console import Console
+from rich.columns import Columns
+from rich.panel import Panel
 
 power_state = ["Unknown" , "Off" , "Suspend" , "On"] #3 - on; 2 - suspend; 1 - off; 0 - unknown
 
@@ -50,6 +51,7 @@ def get_disk_uuids(base_url , api_key , domain_all_content):
         print("ERROR: unexpected data format")
         return []
 
+
 def delete_disk(base_url , api_key , vdisk_uuid):      
         url = f"http://{base_url}/api/vdisks/{vdisk_uuid}/remove/"
         headers={
@@ -69,7 +71,8 @@ def delete_disk(base_url , api_key , vdisk_uuid):
         else:
             print(f"ERROR deleting disk {vdisk_uuid} :\n {response.status_code} - {response.text}")
             return False
-        
+
+
 def get_disk_info(domain_all_content):
     # check for "vdisks" field in recieved json response
     if 'vdisks' not in domain_all_content:
@@ -83,7 +86,6 @@ def get_disk_info(domain_all_content):
     if not disks:
         print("No 'disks' field in recieved data. \nProbably VM does not have any attached disks?")
         return
-    
     # Print info for each disk
     for disk in disks:
         # check for requiered fileds
@@ -96,11 +98,9 @@ def get_disk_info(domain_all_content):
             print("ERROR: failed to retrieve vdisk data.")
 
 
-
 def vm_info(base_url , api_key , vm_uuids): 
     domain_info = get_domain_info(base_url , api_key , vm_uuids)
     domain_all_content = get_domain_all_content(base_url , api_key , vm_uuids)
-
     if domain_info:
         print("\n" , "=" * 14 , "Virtual Machine Info" , "=" * 15)
         print(f"\t VM: {domain_info['verbose_name']}")
@@ -110,16 +110,12 @@ def vm_info(base_url , api_key , vm_uuids):
         get_disk_info(domain_all_content)
 
 
-import requests
-
 def vm_info_short(base_url , api_key): #output data pool info 
     url= f"http://{base_url}//api/domains/"
     response = requests.get(url , headers={'Authorization' : api_key})
-   
     if response.status_code == 200:
         vm_info_short = response.json()
         results_vm_info_short = vm_info_short['results']
-
         print(f"\nShort VM overview | Total: {vm_info_short['count']}")
         print("=" * 43)         
         for x in results_vm_info_short:

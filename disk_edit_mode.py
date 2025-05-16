@@ -1,6 +1,7 @@
 import os
 import requests
 from domain_api import *
+from rich.prompt import Prompt
 
 def disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids):
         print("\033[H\033[2J", end="")
@@ -50,9 +51,12 @@ def disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids):
                     print("All attached vDisks has been deleted!")
             for z in vm_uuids: # only for creating disks
                 domain_uuid = z.strip('\n')
+                print(f"\nCreating and attaching disk to VM {domain_uuid}")
                 domain_info = get_domain_info(base_url , api_key , domain_uuid)
                 domain_all_content = get_domain_all_content(base_url , api_key , domain_uuid)
                 if domain_info:
                     create_and_attach_disk(base_url , api_key , domain_uuid , data_pool_uuid, 10, "falloc")
                     create_and_attach_disk(base_url , api_key , domain_uuid , data_pool_uuid, 20, "falloc")
                     create_and_attach_disk(base_url , api_key , domain_uuid , data_pool_uuid, 20, "falloc")
+                print("Done. Happy virtualization :D")
+                Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")

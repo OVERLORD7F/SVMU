@@ -4,12 +4,15 @@ from cluster_api import *
 from domain_api import * 
 from data_pools_api import *
 from disk_edit_mode import *
+from rich import print
+from rich.panel import Panel
+from rich.console import Console , Align
 
 config_relative_path = os.path.join(os.getcwd() , 'config.txt')  #config.txt in the same directory with main.py      
 if os.path.exists(config_relative_path) and os.path.getsize(config_relative_path) > 0: #check if config exists and not empty   
     pass #do nothing
 else:
-    print("Config file was not found or empty.. ")
+    console.print("[yellow bold italic]Config file was not found or empty.. ")
     config_edit(config_relative_path)
 
 #importing API-KEY / IP / DATA POOL UUID / VM-UUIDs from config
@@ -17,16 +20,20 @@ else:
 base_url, api_key, data_pool_uuid = import_threelines(config_relative_path)
 vm_uuids = import_vm_uuid(config_relative_path)
 
-menu_choice=0 
+menu_choice=0
+menu_options="[gold bold][1] [grey53 italic]Manage utility config\n[/grey53 italic] \
+\n[gold bold][2] [grey53 italic]Enter disk edit mode[/grey53 italic]\n \
+\n[gold bold][3] [grey53 italic]Show breif cluster overview[/grey53 italic]\n \
+\n[gold bold][4] [grey53 italic]Show VM info[/grey53 italic]\n \
+\n[gold bold][5] [grey53 italic]Show data pools[/grey53 italic]\n \
+\n[gold bold][6] [grey53 italic]Show VMs Name / UUID[/grey53 italic]\n \
+\n\n[green_yellow bold]ENTER - exit Utility"
+menu_options=Align.center(menu_options, vertical="middle")
+menu_subtitle = "[blue bold][link=github.com/OVERLORD7F]:wrench: Project_GitHub[/link] [yellow]| [magenta bold][link=spacevm.ru/docs/]:books: SpaceVM_Docs[/link] [yellow]| [red bold][link=comptek.ru]:briefcase: Comptek[/link]"
+console = Console()
 while(menu_choice != ""):    #main menu loop
-    print("\n***    Uitility Main Menu:     ***\n")
-    print("1) Manage utility config")
-    print("2) Enter disk edit mode")
-    print("3) Show breif cluster overview")
-    print("4) Show VM info")
-    print("5) Show data pools")
-    print("6) Show VMs Name / UUID")
-    print("\nENTER - exit Utility ")
+    console.print(Panel(menu_options, 
+title="[bold magenta]SpaceVM Utility - Main Menu" , subtitle = menu_subtitle, subtitle_align="right" , style="yellow" , width=150 , padding = 2))
     menu_choice=str(input("\n>>> "))
     if menu_choice == "1":
         config_menu(config_relative_path)
@@ -42,4 +49,4 @@ while(menu_choice != ""):    #main menu loop
         data_pools(base_url , api_key)
     if menu_choice == "6":
         vm_info_short(base_url , api_key)       
-print("Exiting Utility..")
+console.print("[red bold]Exiting Utility ")

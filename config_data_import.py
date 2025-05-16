@@ -1,9 +1,23 @@
+import os
+
+from rich import print
+from rich.panel import Panel
+from rich.console import Console , Align
+from rich.prompt import Prompt
+console = Console()
+
 def config_menu(config_relative_path):
-        print("\033[H\033[2J", end="") # clears cmd screen, but saves scrollback buffer
-        print("###      Utility Configuration       ###\n")
-        print("1) Show current configuration")
-        print("2) Change configuraion")
-        print("\nENTER - return to Utility Main Menu ")
+        cls()
+        config_menu_options="[gold bold][1] [grey53 italic]Show current configuration\n[/grey53 italic] \
+\n[gold bold][2] [grey53 italic]Change configuraion[/grey53 italic]\n \
+\n\n[green_yellow bold]ENTER - exit Utility"
+        config_menu_options=Align.center(config_menu_options, vertical="middle")
+        console = Console()
+
+        console.print(Panel(config_menu_options, 
+title="[gold bold]SpaceVM Utility - Utility Configuration" , style="dark_orange" , width=150 , padding = 2))
+
+        
         sub_choice=str(input("\n>>> "))
 
         if sub_choice == "1":
@@ -12,9 +26,11 @@ def config_menu(config_relative_path):
             config_edit(config_relative_path)
 
 def config_show(config_relative_path):
+    cls()
     print("Current configuration:\n")
     with open(config_relative_path, "r") as f:
         print(f.read())
+    Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
 
 def import_vm_uuid(config_relative_path):
     vm_uuids = []
@@ -56,10 +72,10 @@ def config_edit(config_relative_path):
             while (vm_input != ""):
                 vm_input = input(">> ")
                 file.write(vm_input + '\n') 
-            print("VM UUIDs has been written in config.")
-            print("\nConfiguration completed!")
-            input("Press ENTER to continue..")
-            print("\033[H\033[2J", end="")
+            console.print("[green bold]VM UUIDs has been written in config :pencil:")
+            console.print("[green bold]Configuration completed ! :white_check_mark:")
+            Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
+            cls()
 
-
-
+def cls():
+    os.system('cls' if os.name=='nt' else 'clear')

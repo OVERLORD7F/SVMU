@@ -1,4 +1,6 @@
 import requests
+import os
+from rich.prompt import Prompt
 
 def data_pools(base_url , api_key): #output data pool info 
     url= f"http://{base_url}//api/data-pools/"
@@ -17,3 +19,5 @@ def data_pools(base_url , api_key): #output data pool info
             print("-" * 44) 
     else:
         print(f"Failed to retrieve data {response.status_code} ")
+    Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
+    os.system('cls' if os.name=='nt' else 'clear')

@@ -1,6 +1,8 @@
 
 #from main import base_url , api_key , requests
 import requests
+import os
+from rich.prompt import Prompt
 
 def cluster_info(base_url , api_key): #output short clusters overview 
     url= f"http://{base_url}/api/clusters"
@@ -24,3 +26,5 @@ def cluster_info(base_url , api_key): #output short clusters overview
         
     else:
         print(f"Failed to retrieve data {response.status_code}")  
+    Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
+    os.system('cls' if os.name=='nt' else 'clear')
