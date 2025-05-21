@@ -10,16 +10,11 @@ def config_menu(config_relative_path):
         cls()
         config_menu_options="[gold bold][1] [grey53 italic]Show current configuration\n[/grey53 italic] \
 \n[gold bold][2] [grey53 italic]Change configuraion[/grey53 italic]\n \
-\n\n[green_yellow bold]ENTER - exit Utility"
+\n\n[green_yellow bold]ENTER - return to Main Menu"
         config_menu_options=Align.center(config_menu_options, vertical="middle")
         console = Console()
-
-        console.print(Panel(config_menu_options, 
-title="[gold bold]SpaceVM Utility - Utility Configuration" , style="dark_orange" , width=150 , padding = 2))
-
-        
+        console.print(Panel(config_menu_options, title="[gold bold]SpaceVM Utility - Utility Configuration" , border_style="magenta" , width=150 , padding = 2))
         sub_choice=str(input("\n>>> "))
-
         if sub_choice == "1":
             config_show(config_relative_path)
         if sub_choice == "2":
@@ -27,10 +22,11 @@ title="[gold bold]SpaceVM Utility - Utility Configuration" , style="dark_orange"
 
 def config_show(config_relative_path):
     cls()
-    print("Current configuration:\n")
+    console.rule(title = "Current configuration" , align="center" , style="yellow")
     with open(config_relative_path, "r") as f:
         print(f.read())
-    Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
+    console.rule(style="yellow")
+    Prompt.ask("[green_yellow bold]ENTER - return to Main Menu.. :right_arrow_curving_down:")
 
 def import_vm_uuid(config_relative_path):
     vm_uuids = []

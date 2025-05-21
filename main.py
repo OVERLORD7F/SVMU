@@ -24,13 +24,14 @@ menu_choice=0
 menu_options="[gold bold][1] [grey53 italic]Manage utility config\n[/grey53 italic] \
 \n[gold bold][2] [grey53 italic]Enter disk edit mode[/grey53 italic]\n \
 \n[gold bold][3] [grey53 italic]Show breif cluster overview[/grey53 italic]\n \
-\n[gold bold][4] [grey53 italic]Show VM info[/grey53 italic]\n \
+\n[gold bold][4] [grey53 italic]Show VM info \n    (for selected VMs in config)[/grey53 italic]\n \
 \n[gold bold][5] [grey53 italic]Show data pools[/grey53 italic]\n \
 \n[gold bold][6] [grey53 italic]Show VMs Name / UUID[/grey53 italic]\n \
 \n\n[green_yellow bold]ENTER - exit Utility"
 menu_options=Align.center(menu_options, vertical="middle")
-menu_subtitle = "[blue bold][link=github.com/OVERLORD7F]:wrench: Project_GitHub[/link] [yellow]| [magenta bold][link=spacevm.ru/docs/]:books: SpaceVM_Docs[/link] [yellow]| [red bold][link=comptek.ru]:briefcase: Comptek[/link]"
+menu_subtitle = "[blue bold][link=https://github.com/OVERLORD7F/SpaceVM_VM_Utility]:wrench: Project_GitHub[/link] [yellow]| [magenta bold][link=https://spacevm.ru/docs/]:books: SpaceVM_Docs[/link] [yellow]| [red bold][link=https://comptek.ru]:briefcase: Comptek[/link]"
 console = Console()
+os.system('cls' if os.name=='nt' else 'clear') 
 while(menu_choice != ""):    #main menu loop
     console.print(Panel(menu_options, 
 title="[bold magenta]SpaceVM Utility - Main Menu" , subtitle = menu_subtitle, subtitle_align="right" , style="yellow" , width=150 , padding = 2))
@@ -42,11 +43,13 @@ title="[bold magenta]SpaceVM Utility - Main Menu" , subtitle = menu_subtitle, su
     if menu_choice == "3":
         cluster_info(base_url , api_key)
     if menu_choice == "4":
-        print("\033[H\033[2J", end="") 
+        os.system('cls' if os.name=='nt' else 'clear') 
         for x in vm_uuids:
             vm_info(base_url , api_key , x)
+        Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
     if menu_choice == "5":
         data_pools(base_url , api_key)
     if menu_choice == "6":
-        vm_info_short(base_url , api_key)       
+        vm_info_short(base_url , api_key)
+    os.system('cls' if os.name=='nt' else 'clear')  #clears screen before looping back to main menu     
 console.print("[red bold]Exiting Utility ")
