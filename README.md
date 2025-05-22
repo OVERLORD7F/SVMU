@@ -3,18 +3,26 @@ Utility to manage Virtual Machines in SpaceVM.
 
 Written in python, uses [SpaceVM API](https://spacevm.ru/docs/6.5/api/) to collect and manage existing Virtual Machines in your SpaceVM cluster.
 
-_For now, this utility is focused on managing virtual disks_
+>[!NOTE]
+>_For now, this utility is focused on managing virtual disks_<br>
+>_Works with SpaceVM 6.5.5+_
 
-_Works with SpaceVM 6.5.5+_
+# Requirements
+- Fully setup SpaceVM cluster with VMs
+- SpaceVM Utility and SpaceVM cluster should be in LAN
+- Obtain your [API Key](https://spacevm.ru/docs/latest/base/operator_guide/security/users/#_14)
+>[!WARNING]
+> Utility is only tested on Windows 10
+- For Windows 10 - [New Microsoft Terminal](https://github.com/microsoft/terminal) is highly recommended (correct colors, menus, etc)
 
 # Utility usage
-Clone repository or use compiled .exe
+Clone repository or use compiled .exe from [Releases Tab](https://github.com/OVERLORD7F/SpaceVM_VM_Utility/releases)
 
-Config file is essential for the utility.
+Fill in the config file as stated below.
 
 ## Config File
 Config file contains all necessary data for utility and has to be placed in the same directory as Utility itself.
-
+You can create config and specify all necessary data within the Utility.
 <ins>The following parameters are required:</ins>
 ```
 1. Controller IP Address (Master)
