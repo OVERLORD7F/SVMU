@@ -12,7 +12,7 @@ def data_pools(base_url, api_key):  # output data pool info
     if response.status_code == 200:
         data_pools = response.json()
         results_data_pools_info = data_pools['results']
-        os.system('cls' if os.name == 'nt' else 'clear')
+        #os.system('cls' if os.name == 'nt' else 'clear')
         console.rule("[bold cyan]Data Pools Overview")
         console.print(f"[bold]Data pools total:[/] {data_pools['count']}\n")
         panels = []
@@ -33,4 +33,3 @@ def data_pools(base_url, api_key):  # output data pool info
     else:
         console.print(f"[red]Failed to retrieve data {response.status_code}[/]")
     Prompt.ask("[green_yellow bold]ENTER - return to Main Menu.. :right_arrow_curving_down:")
-    os.system('cls' if os.name == 'nt' else 'clear')

@@ -51,5 +51,7 @@ title="[bold magenta]SpaceVM Utility - Main Menu" , subtitle = menu_subtitle, su
         data_pools(base_url , api_key)
     if menu_choice == "6":
         vm_info_short(base_url , api_key)
+    if menu_choice == "7":
+        check_api_key(base_url, api_key)
     os.system('cls' if os.name=='nt' else 'clear')  #clears screen before looping back to main menu     
 console.print("[red bold]Exiting Utility ")

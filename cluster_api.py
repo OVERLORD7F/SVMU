@@ -35,3 +35,15 @@ def cluster_info(base_url, api_key):  # output short clusters overview
         console.print(f"[red]Failed to retrieve data {response.status_code}[/]")
     Prompt.ask("[green_yellow bold]ENTER - return to Main Menu.. :right_arrow_curving_down:")
     os.system('cls' if os.name == 'nt' else 'clear')
+
+def check_api_key(base_url, api_key):  # test api key and show spaceVM version
+    url = f"http://{base_url}/api/controllers/base-version/"
+    response = requests.get(url, headers={'Authorization': api_key})
+    console = Console()
+    if response.status_code == 200:
+        cluster_info = response.json()
+        version = cluster_info['version']
+        console.print(f"[bold green]Successfully conected to SpaceVM version {version}")
+    else:
+        console.print(f"[bold red]{response.status_code}[/]")
+    return response.status_code

@@ -1,6 +1,8 @@
 import os
 import subprocess
 
+from cluster_api import *
+from data_pools_api import *
 from rich import print
 from rich.panel import Panel
 from rich.console import Console , Align
@@ -57,10 +59,11 @@ def config_edit(config_relative_path):
     if menu_choice == "Y" or menu_choice == "y":
         base_url = input("Type SpaceVM Controller IP: ")
         while ping(base_url) != True:
-            base_url = input("No response. Check and type SpaceVM Controller IP again: ")
+            base_url = console.input("[bold red]No response.\nCheck and type SpaceVM Controller IP again: [/]")
         api_key = input("Type your API Key: ")
-        # status
-        # datapool uid
+        while check_api_key(base_url, "jwt " + api_key) != 200:
+            api_key = console.input("[bold red]Check and type SpaceVM Controller API Key again: [/]")
+        print(data_pools(base_url,"jwt " + api_key))
         data_pool_uuid = input("Type Data Pool UUID you wish to use: ")
         lines = [base_url, api_key, data_pool_uuid]
         with open(config_relative_path, "w+") as file:
