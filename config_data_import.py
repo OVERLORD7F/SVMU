@@ -63,7 +63,7 @@ def config_edit(config_relative_path):
         api_key = input("Type your API Key: ")
         while check_api_key(base_url, "jwt " + api_key) != 200:
             api_key = console.input("[bold red]Check and type SpaceVM Controller API Key again: [/]")
-        print(data_pools(base_url,"jwt " + api_key))
+        data_pools(base_url,"jwt " + api_key)
         data_pool_uuid = input("Type Data Pool UUID you wish to use: ")
         lines = [base_url, api_key, data_pool_uuid]
         with open(config_relative_path, "w+") as file:
