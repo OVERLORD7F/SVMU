@@ -47,3 +47,4 @@ def check_api_key(base_url, api_key):  # test api key and show spaceVM version
     else:
         console.print(f"[bold red]{response.status_code}[/]")
     return response.status_code
+

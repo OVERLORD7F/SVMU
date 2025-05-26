@@ -32,4 +32,12 @@ def data_pools(base_url, api_key):  # output data pool info
         console.print(*panels, sep="\n")
     else:
         console.print(f"[red]Failed to retrieve data {response.status_code}[/]")
-    Prompt.ask("[green_yellow bold]ENTER - return to Main Menu.. :right_arrow_curving_down:")
+    Prompt.ask("[green_yellow bold]ENTER - to proceed.. :right_arrow_curving_down:")
+
+#translates data pool uuid to verbose_name
+def get_data_pool_name(base_url, api_key, data_pool_uuid):
+    url = f"http://{base_url}//api/data-pools/{data_pool_uuid}/"
+    response = requests.get(url, headers={'Authorization': api_key})
+    if response.status_code == 200:
+        data_pool_name = response.json()
+        return (f"{data_pool_name['verbose_name']}")
