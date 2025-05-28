@@ -7,7 +7,11 @@ from disk_edit_mode import *
 from rich.panel import Panel
 from rich.console import Console , Align
 
-config_relative_path = os.path.join(os.getcwd() , 'SpaceVM_Utility.conf')  #config.txt in the same directory with main.py
+config_relative_path = os.path.join(os.getcwd() , 'SpaceVM_Utility.conf')  #config in the same directory with main.py
+
+print("Reading config from:", os.path.abspath(config_relative_path))
+if not os.path.exists(config_relative_path):
+    print(f"Config file not found: {config_relative_path}")
 
 menu_choice=0
 console = Console()
@@ -29,7 +33,7 @@ while(menu_choice != ""):    #main menu loop
     console.print(Panel(menu_options, title="[bold magenta]SpaceVM Utility - Main Menu" , subtitle = menu_subtitle, subtitle_align="right" , style="yellow" , width=150 , padding = 2))
     menu_choice=str(input("\n>>> "))
     if menu_choice == "1":
-        config_menu(config_relative_path)
+        config_menu(base_url, api_key, config_relative_path)
     if menu_choice == "2":
         disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids)
     if menu_choice == "3":
