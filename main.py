@@ -7,46 +7,26 @@ from disk_edit_mode import *
 from rich.panel import Panel
 from rich.console import Console , Align
 
-config_relative_path = os.path.join(os.getcwd() , 'SpaceVM_Utility.conf')  #config.txt in the same directory with main.py      
-if os.path.exists(config_relative_path) and os.path.getsize(config_relative_path) > 0: #check if config exists and not empty   
-    pass #do nothing
-else:
-    console.print("[yellow bold italic]Config file was not found or empty.. ")
-    config_edit(config_relative_path)
-
-#importing API-KEY / IP / DATA POOL UUID / VM-UUIDs from config
-config_data = config_import(config_relative_path)
-
-base_url = config_data['base_url']
-api_key = config_data['api_key']
-data_pool_uuid = config_data['data_pool_uuid']
-vm_uuids = config_data['vm_list']
-data_pool_name = get_data_pool_name(base_url , api_key , data_pool_uuid)
-
-#for x in vm_uuids:
-#    vm_names = get_vm_name(base_url , api_key , x)
-#    print(vm_names)
-
+config_relative_path = os.path.join(os.getcwd() , 'SpaceVM_Utility.conf')  #config.txt in the same directory with main.py
 
 menu_choice=0
-menu_options=f"[gold bold][1] [grey53 italic]Manage utility config\n[/grey53 italic] \
+console = Console()
+os.system('cls' if os.name=='nt' else 'clear') 
+while(menu_choice != ""):    #main menu loop
+    check_config(config_relative_path)
+    base_url, api_key, data_pool_uuid, data_pool_name, vm_uuids, vm_names = config_import(config_relative_path) #importing API-KEY / IP / DATA POOL UUID / VM-UUIDs from config
+    menu_options=f"[gold bold][1] [grey53 italic]Manage utility config\n[/grey53 italic] \
 \n[gold bold][2] [grey53 italic]Enter disk edit mode[/grey53 italic]\n \
 \n[gold bold][3] [grey53 italic]Show breif cluster overview[/grey53 italic]\n \
 \n[gold bold][4] [grey53 italic]Show VM info \n    (for selected VMs in config)[/grey53 italic]\n \
 \n[gold bold][5] [grey53 italic]Show data pools[/grey53 italic]\n \
 \n[gold bold][6] [grey53 italic]Show VMs Name / UUID[/grey53 italic]\n \
-\n\n[green_yellow bold]ENTER - exit Utility\n\n \
-[grey53]Connected to Controller: {base_url} \n Selected Data Pool: {data_pool_name} \n Selected VMs:\n {vm_uuids}"
-
-menu_options=Align.center(menu_options, vertical="middle")
-
-
-menu_subtitle = "[blue bold][link=https://github.com/OVERLORD7F/SpaceVM_VM_Utility]:wrench: Project_GitHub[/link] [yellow]| [magenta bold][link=https://spacevm.ru/docs/]:books: SpaceVM_Docs[/link] [yellow]| [red bold][link=https://comptek.ru]:briefcase: Comptek[/link]"
-console = Console()
-#os.system('cls' if os.name=='nt' else 'clear') 
-while(menu_choice != ""):    #main menu loop
-    console.print(Panel(menu_options, 
-title="[bold magenta]SpaceVM Utility - Main Menu" , subtitle = menu_subtitle, subtitle_align="right" , style="yellow" , width=150 , padding = 2))
+\n\n[green_yellow bold]ENTER - exit Utility[/]\n\n \
+[underline bold grey53]Currently imported config:[/]\n \
+[bold grey53]Connected to Controller: [bright_yellow]{base_url}[/]\n Selected Data Pool: [bright_yellow]{data_pool_name}[/]\n Selected VMs:\n [bright_yellow]{vm_names}"
+    menu_options=Align.center(menu_options, vertical="middle")
+    menu_subtitle = "[blue bold][link=https://github.com/OVERLORD7F/SpaceVM_VM_Utility]:wrench: Project_GitHub[/link] [yellow]| [magenta bold][link=https://spacevm.ru/docs/]:books: SpaceVM_Docs[/link] [yellow]| [red bold][link=https://comptek.ru]:briefcase: Comptek[/link]"
+    console.print(Panel(menu_options, title="[bold magenta]SpaceVM Utility - Main Menu" , subtitle = menu_subtitle, subtitle_align="right" , style="yellow" , width=150 , padding = 2))
     menu_choice=str(input("\n>>> "))
     if menu_choice == "1":
         config_menu(config_relative_path)
@@ -60,7 +40,7 @@ title="[bold magenta]SpaceVM Utility - Main Menu" , subtitle = menu_subtitle, su
             vm_info(base_url , api_key , x)
         Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
     if menu_choice == "5":
-        data_pools(base_url , api_key)
+        show_data_pools(base_url , api_key)
     if menu_choice == "6":
         vm_info_short(base_url , api_key)
     if menu_choice == "7":

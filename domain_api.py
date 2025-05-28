@@ -108,7 +108,7 @@ def get_vm_name(base_url, api_key, vm_uuids):
     response = requests.get(url, headers={'Authorization': api_key})
     if response.status_code == 200:
         vm_name = response.json()
-        return (f"{vm_name['verbose_name']}") 
+        return (f"{vm_name['verbose_name']}")
 
 def vm_info(base_url, api_key, vm_uuids):
     domain_info = get_domain_info(base_url, api_key, vm_uuids)

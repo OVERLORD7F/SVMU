@@ -2,6 +2,7 @@ import os
 import subprocess
 import configparser
 from cluster_api import *
+from domain_api import *
 from data_pools_api import *
 from rich import print
 from rich.panel import Panel
@@ -37,31 +38,37 @@ def config_import(config_relative_path):
     config.read(config_relative_path)
 
     base_url = config.get('General', 'controller_ip')
-    api_key = config.get('General', 'api_key')
+    api_key = "jwt " + config.get('General', 'api_key') #That was realy obvious DACOM >:C
     data_pool_uuid = config.get('Data_Pool', 'data_pool_uuid')
 
     vm_list = []
     if 'VM_List' in config:
         for key, value in config['VM_List'].items():
             vm_list.append(value)
+    #get pretty name for selected data pool
+    data_pool_name = get_data_pool_name(base_url , api_key , data_pool_uuid)
 
-    config_values = {
-        'base_url': base_url,
-        'api_key': "jwt " + api_key,
-        'data_pool_uuid': data_pool_uuid,
-        'vm_list': vm_list
-    }
+    #get pretty name for selected VMs
+    vm_names=[]
+    for x in vm_list:
+        vm_names.append(get_vm_name(base_url, api_key, x))
 
-    return config_values
+    return base_url, api_key, data_pool_uuid, data_pool_name, vm_list, vm_names
 
 def config_edit(config_relative_path):
     read_input = input("Create new config file? (Y / N): ")
     menu_choice = str(read_input)
     if menu_choice == "Y" or menu_choice == "y":
         base_url = input("Type SpaceVM Controller IP: ")
-        api_key = input("Type your API Key: ")
-        data_pool_uuid = input("Type Data Pool UUID you wish to use: ")
+        while check_ping(base_url) != True:
+            base_url = console.input("[bold red]No response.\nCheck and type SpaceVM Controller IP again: [/]")
 
+        api_key = input("Type your API Key: ")
+        while check_api_key(base_url, "jwt " + api_key) != 200:
+            api_key = console.input("[bold red]Check and type SpaceVM Controller API Key again: [/]")
+        show_data_pools(base_url, "jwt " + api_key)
+
+        data_pool_uuid = input("Type Data Pool UUID you wish to use: ")
         config = configparser.ConfigParser()
         config["General"] = {
             "controller_ip": base_url,
@@ -88,10 +95,17 @@ def config_edit(config_relative_path):
         Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
         cls()
 
+def check_config(config_relative_path):
+    if os.path.exists(config_relative_path) and os.path.getsize(config_relative_path) > 0: #check if config exists and not empty   
+        pass #do nothing
+    else:
+        console.print("[yellow bold italic]Config file was not found or empty.. ")
+        config_edit(config_relative_path)
+
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
 
-def ping(base_url):
+def check_ping(base_url):
     DNULL = open(os.devnull, 'w')
     if os.name == 'nt':
         status = subprocess.call(["ping","-n","1",base_url],stdout = DNULL)

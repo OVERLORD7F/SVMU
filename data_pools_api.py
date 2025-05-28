@@ -5,7 +5,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.align import Align
 
-def data_pools(base_url, api_key):  # output data pool info
+def show_data_pools(base_url, api_key):  # output data pool info
     url = f"http://{base_url}//api/data-pools/"
     response = requests.get(url, headers={'Authorization': api_key})
     console = Console()
