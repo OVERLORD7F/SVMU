@@ -2,6 +2,7 @@
 import requests
 import secrets #for generating unique names
 import os
+from config_data_import import *
 from rich.console import Console , Align
 from rich.columns import Columns
 from rich.panel import Panel
@@ -187,20 +188,48 @@ def vm_check_power(base_url , api_key , vm_uuids):
         if domain_info['user_power_state'] == 1:
             print(f"VM - {vm_uuids} Power check passed!")
 
-def test(base_url, api_key):
+def vm_tags(base_url, api_key):
     url = f"http://{base_url}/api/domains/"
     response = requests.get(url, headers={'Authorization': api_key})
     if response.status_code == 200:
+        verbose_name_input = input("Write tag:")
+        output_renderables = []
         vm_info_short = response.json()
         y= vm_info_short 
-        j = 0
+        vm_id_list = []
         for y in vm_info_short['results']:
             for x in y['tags']:
-                if x['verbose_name'] == 'Courses':
-                    test = y['verbose_name'] , y['id']
-                    print(test)
+                if x['verbose_name'] == verbose_name_input:
+                    vm_id_list.append(y['id'])
+                    output_string = f"VM: [bold]{y['verbose_name']}" + f"\nUUID: [italic]{y['id']}"
+                    output_renderable = Panel(output_string, expand=False, border_style="magenta")
+                    output_renderables.append(output_renderable) #adds current renderable
+        console.print(Columns(output_renderables)) #print renderables by columns
     else:
         print(f"Failed to retrieve data {response.status_code}")
     console.rule(style="grey53")    
     Prompt.ask("[green_yellow bold]ENTER - return to Main Menu.... :right_arrow_curving_down:")
     os.system('cls' if os.name=='nt' else 'clear')
+    return(vm_id_list)
+
+def vm_menu(base_url, api_key, vm_uuids):
+        os.system('cls' if os.name=='nt' else 'clear') 
+        config_menu_options="[gold bold][1] [grey53 italic]Show VM info \n    (for selected VMs in config)[/grey53 italic]\n \
+\n[gold bold][2] [grey53 italic]Show VMs Name / UUID[/grey53 italic]\n \
+\n[gold bold][3] [grey53 italic]Show VMs by tags / UUID[/grey53 italic]\n \
+\n\n[green_yellow bold]ENTER - return to Main Menu[/]"
+        config_menu_options=Align.center(config_menu_options, vertical="middle")
+        console = Console()
+        console.print(Panel(config_menu_options, title="[gold bold]Show VM info" , border_style="magenta" , width=150 , padding = 2))
+        sub_choice=str(input("\n>>> "))
+        if sub_choice == "1":
+            os.system('cls' if os.name=='nt' else 'clear') 
+            for x in vm_uuids:
+                vm_info(base_url , api_key , x)
+        Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
+        if sub_choice == "2":
+            os.system('cls' if os.name=='nt' else 'clear') 
+            vm_info_short(base_url , api_key)
+        if sub_choice == "3":
+            os.system('cls' if os.name=='nt' else 'clear') 
+            vm_tags(base_url , api_key)
