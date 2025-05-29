@@ -145,7 +145,7 @@ def vm_info_short(base_url, api_key):
         console.rule(style="grey53")
         output_renderables = []
         for x in results_vm_info_short:
-            output_string = f"VM: [bold]{x['verbose_name']}" + f"\nUUID: [italic]{x['id']}" + f"\ntag: [italic]{x['tags']}"
+            output_string = f"VM: [bold]{x['verbose_name']}" + f"\nUUID: [italic]{x['id']}"
             output_renderable = Panel(output_string, expand=False, border_style="magenta")
             output_renderables.append(output_renderable) #adds current renderable
         console.print(Columns(output_renderables)) #print renderables by columns
@@ -208,7 +208,7 @@ def vm_tags(base_url, api_key):
             for x in y['tags']:
                 if x['verbose_name'] == verbose_name_input:
                     vm_id_list.append(y['id'])
-                    output_string = f"VM: [bold]{y['verbose_name']}" + f"\nUUID: [italic]{y['id']}"
+                    output_string = f"VM: [bold]{y['verbose_name']} [bold yellow]#{x['verbose_name']}[/]" + f"\nUUID: [italic]{y['id']}"
                     output_renderable = Panel(output_string, expand=False, border_style="magenta")
                     output_renderables.append(output_renderable) #adds current renderable
         console.print(Columns(output_renderables)) #print renderables by columns
@@ -233,7 +233,7 @@ def vm_menu(base_url, api_key, vm_uuids):
             os.system('cls' if os.name=='nt' else 'clear') 
             for x in vm_uuids:
                 vm_info(base_url , api_key , x)
-        Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
+            Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
         if sub_choice == "2":
             os.system('cls' if os.name=='nt' else 'clear') 
             vm_info_short(base_url , api_key)
