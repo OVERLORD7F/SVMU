@@ -126,12 +126,15 @@ def vm_info_short(base_url, api_key):
     if response.status_code == 200:
         vm_info_short = response.json()
         results_vm_info_short = vm_info_short['results']
+        tag = vm_info_short['results'][0]['tags'][0]
+        print(tag)
+        #print(results_vm_info_short)
         os.system('cls' if os.name=='nt' else 'clear')
         console.print(Align.center(Panel(f"[bold magenta]Short VM overview | Total: {vm_info_short['count']}", expand=True , border_style="yellow") , vertical="middle"))
         console.rule(style="grey53")
         output_renderables = []
         for x in results_vm_info_short:
-            output_string = f"VM: [bold]{x['verbose_name']}" + f"\nUUID: [italic]{x['id']}"
+            output_string = f"VM: [bold]{x['verbose_name']}" + f"\nUUID: [italic]{x['id']}" + f"\ntag: [italic]{x['tags']}"
             output_renderable = Panel(output_string, expand=False, border_style="magenta")
             output_renderables.append(output_renderable) #adds current renderable
         console.print(Columns(output_renderables)) #print renderables by columns
@@ -176,3 +179,21 @@ def vm_check_power(base_url , api_key , vm_uuids):
             raise Exception(f"VM - {vm_uuids} is UNAVAILABLE! \n Have fun figuring that out D:")
         if domain_info['user_power_state'] == 1:
             print(f"VM - {vm_uuids} Power check passed!")
+
+def test(base_url, api_key):
+    url = f"http://{base_url}/api/domains/"
+    response = requests.get(url, headers={'Authorization': api_key})
+    if response.status_code == 200:
+        vm_info_short = response.json()
+        y= vm_info_short 
+        j = 0
+        for y in vm_info_short['results']:
+            for x in y['tags']:
+                if x['verbose_name'] == 'Courses':
+                    test = y['verbose_name'] , y['id']
+                    print(test)
+    else:
+        print(f"Failed to retrieve data {response.status_code}")
+    console.rule(style="grey53")    
+    Prompt.ask("[green_yellow bold]ENTER - return to Main Menu.... :right_arrow_curving_down:")
+    os.system('cls' if os.name=='nt' else 'clear')
