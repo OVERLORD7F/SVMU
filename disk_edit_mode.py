@@ -55,7 +55,8 @@ def disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids):
                     console.print("[bold red]All attached vDisks has been deleted!")
             for z in vm_uuids: # only for creating disks
                 domain_uuid = z.strip('\n')
-                console.print(f"\n[bold underline yellow]Creating and attaching disk to VM {domain_uuid}")
+                vm_name = get_vm_name(base_url, api_key, domain_uuid)
+                console.print(f"\n[bold underline yellow]Creating and attaching disk to VM {vm_name}")
                 domain_info = get_domain_info(base_url , api_key , domain_uuid)
                 domain_all_content = get_domain_all_content(base_url , api_key , domain_uuid)
                 if domain_info:

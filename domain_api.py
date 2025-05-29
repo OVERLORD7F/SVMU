@@ -103,6 +103,13 @@ def get_disk_info(domain_all_content):
 
     console.print(Columns(disk_info_renderables))
 
+def get_vm_name(base_url, api_key, vm_uuids):
+    url = f"http://{base_url}//api/domains/{vm_uuids}/"
+    response = requests.get(url, headers={'Authorization': api_key})
+    if response.status_code == 200:
+        vm_name = response.json()
+        return (f"{vm_name['verbose_name']}")
+
 def vm_info(base_url, api_key, vm_uuids):
     domain_info = get_domain_info(base_url, api_key, vm_uuids)
     domain_all_content = get_domain_all_content(base_url, api_key, vm_uuids)

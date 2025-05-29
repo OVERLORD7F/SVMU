@@ -1,7 +1,8 @@
 import os
 import subprocess
-
+import configparser
 from cluster_api import *
+from domain_api import *
 from data_pools_api import *
 from rich import print
 from rich.panel import Panel
@@ -9,19 +10,26 @@ from rich.console import Console , Align
 from rich.prompt import Prompt
 console = Console()
 
-def config_menu(config_relative_path):
+def config_menu(base_url, api_key, config_relative_path):
         cls()
-        config_menu_options="[gold bold][1] [grey53 italic]Show current configuration\n[/grey53 italic] \
-\n[gold bold][2] [grey53 italic]Change configuraion[/grey53 italic]\n \
-\n\n[green_yellow bold]ENTER - return to Main Menu"
+        config_menu_options="[gold bold][1] [grey53 italic]Show current configuration\n[/] \
+\n[gold bold][2] [grey53 italic]Setup new config file[/]\n \
+\n[gold bold][3] [grey53 italic]Change selected data pool[/]\n\
+\n[gold bold][4] [grey53 italic]Change selected VMs[/]\
+\n\n[green_yellow bold]ENTER - return to Main Menu[/]"
         config_menu_options=Align.center(config_menu_options, vertical="middle")
         console = Console()
         console.print(Panel(config_menu_options, title="[gold bold]SpaceVM Utility - Utility Configuration" , border_style="magenta" , width=150 , padding = 2))
         sub_choice=str(input("\n>>> "))
         if sub_choice == "1":
             config_show(config_relative_path)
+            config_menu(base_url, api_key, config_relative_path)
         if sub_choice == "2":
             config_edit(config_relative_path)
+        if sub_choice == "3":
+            change_data_pool(base_url, api_key, config_relative_path)
+        if sub_choice == "4":
+            change_vm_uuids(config_relative_path)
 
 def config_show(config_relative_path):
     cls()
@@ -29,62 +37,120 @@ def config_show(config_relative_path):
     with open(config_relative_path, "r") as f:
         print(f.read())
     console.rule(style="yellow")
-    Prompt.ask("[green_yellow bold]ENTER - return to Main Menu.. :right_arrow_curving_down:")
+    Prompt.ask("[green_yellow bold]ENTER - return to Utility Configuration.. :right_arrow_curving_down:")
 
-def import_vm_uuid(config_relative_path):
-    vm_uuids = []
-    with open(config_relative_path, "r") as f:
-        for i in range(3): # ignoring 2 first lines (IP, API-KEY)
-            next(f)
-        for line in f:                
-            line = line.strip('\n')
-            if line: # checks if line is empty (EOF). ESSENTIAL, DO NOT REMOVE
-                vm_uuids.append(line)
-    return vm_uuids
+def config_import(config_relative_path):
+    config = configparser.ConfigParser()
+    config.read(config_relative_path)
 
-def import_threelines(config_relative_path):
-    threelines = [None] * 3
-    with open(config_relative_path, "r") as f:
-        all_lines = f.readlines()
-        if len(all_lines) < 3:
-             raise ValueError("Check config. Receiving less than 3 lines!")
-        threelines[0] = all_lines[0].strip('\n')
-        threelines[1] = "jwt " + all_lines[1].strip('\n') #actual format for api_key. That was realy obvious DACOM >:C
-        threelines[2] = all_lines[2].strip('\n')
-    return threelines
+    base_url = config.get('General', 'controller_ip')
+    api_key = "jwt " + config.get('General', 'api_key') #That was realy obvious DACOM >:C
+    data_pool_uuid = config.get('Data_Pool', 'data_pool_uuid')
+
+    vm_list = []
+    if 'VM_List' in config:
+        for key, value in config['VM_List'].items():
+            vm_list.append(value)
+    #get pretty name for selected data pool
+    data_pool_name = get_data_pool_name(base_url , api_key , data_pool_uuid)
+    #get pretty name for selected VMs
+    vm_names=[]
+    for x in vm_list:
+        vm_names.append(get_vm_name(base_url, api_key, x))
+    return base_url, api_key, data_pool_uuid, data_pool_name, vm_list, vm_names
+
+def change_data_pool(base_url, api_key, config_relative_path):
+    cls()
+    show_data_pools(base_url, api_key)
+    new_data_pool_uuid = input("Type NEW Data Pool UUID: ")
+    config = configparser.ConfigParser()
+    config.read(config_relative_path)
+    if config.has_section('Data_Pool'):
+        # update data_pool_uuid
+        config.set('Data_Pool', 'data_pool_uuid', new_data_pool_uuid)
+        with open(config_relative_path, 'w') as config_file:
+            config.write(config_file)
+    else:
+        print("No 'Data_Pool' section in config file..")
+    config_show(config_relative_path)
+
+
+def change_vm_uuids(config_relative_path):
+    config = configparser.ConfigParser()
+    config.read(config_relative_path)
+    # Remove old VM_List section if it exists, then add a fresh one
+    if config.has_section('VM_List'):
+        config.remove_section('VM_List')
+    config.add_section('VM_List')
+    cls()
+    console.print("[yellow bold]Type new VM UUIDs one by one (input ENTER to stop):")
+    x = 0
+    while True:
+        vm_input = input(">> ")
+        if not vm_input:
+            break
+        x += 1
+        config.set('VM_List', f'uuid_{x}', vm_input)
+
+    with open(config_relative_path, 'w') as configfile:
+        config.write(configfile)
+
+    console.print("[green bold]VM UUIDs have been updated in config :pencil:")
+    Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
+    config_show(config_relative_path)
+
 
 def config_edit(config_relative_path):
-    read_input=input("Create new config file? (Y / N): ") 
-    menu_choice=str(read_input)
+    read_input = input("Create new config file? (Y / N): ")
+    menu_choice = str(read_input)
     if menu_choice == "Y" or menu_choice == "y":
         base_url = input("Type SpaceVM Controller IP: ")
-        while ping(base_url) != True:
+        while check_ping(base_url) != True:
             base_url = console.input("[bold red]No response.\nCheck and type SpaceVM Controller IP again: [/]")
+
         api_key = input("Type your API Key: ")
         while check_api_key(base_url, "jwt " + api_key) != 200:
             api_key = console.input("[bold red]Check and type SpaceVM Controller API Key again: [/]")
-        data_pools(base_url,"jwt " + api_key)
+        show_data_pools(base_url, "jwt " + api_key)
         data_pool_uuid = input("Type Data Pool UUID you wish to use: ")
-        lines = [base_url, api_key, data_pool_uuid]
-        with open(config_relative_path, "w+") as file:
-            for line in lines:
-                file.write(line + '\n')
-               
+
+        config = configparser.ConfigParser()
+        config["General"] = {
+            "controller_ip": base_url,
+            "api_key": api_key,
+        }
+        config["Data_Pool"] = {"data_pool_uuid": data_pool_uuid}
+
+        with open(config_relative_path, "w") as configfile:
+            config.write(configfile)
+
         print("Type VM UUIDs one by one (input ENTER to stop)")
-        with open(config_relative_path, "a") as file: #appends new content at the end without modifying the existing data
-            vm_input="test"
-            while (vm_input != ""):
+        with open(config_relative_path, "a") as file:
+            file.write("[VM_List]\n") #manually writing section for VMs
+            vm_input = []
+            x = 0
+            while vm_input != "":
                 vm_input = input(">> ")
-                file.write(vm_input + '\n') 
-            console.print("[green bold]VM UUIDs has been written in config :pencil:")
-            console.print("[green bold]Configuration completed ! :white_check_mark:")
-            Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
-            cls()
+                if vm_input:
+                    x += 1
+                    file.write(f"uuid_{x} = {vm_input}\n")
+
+        console.print("[green bold]VM UUIDs have been written in config :pencil:")
+        console.print("[green bold]Configuration completed ! :white_check_mark:")
+        Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
+        cls()
+
+def check_config(config_relative_path):
+    if os.path.exists(config_relative_path) and os.path.getsize(config_relative_path) > 0: #check if config exists and not empty   
+        pass #do nothing
+    else:
+        console.print("[yellow bold italic]Config file was not found or empty.. ")
+        config_edit(config_relative_path)
 
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
 
-def ping(base_url):
+def check_ping(base_url):
     DNULL = open(os.devnull, 'w')
     if os.name == 'nt':
         status = subprocess.call(["ping","-n","1",base_url],stdout = DNULL)

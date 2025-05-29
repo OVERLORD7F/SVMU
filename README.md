@@ -20,26 +20,30 @@ Clone repository or use compiled .exe from [Releases Tab](https://github.com/OVE
 
 Fill in the config file as stated below.
 
-## Config File
-Config file contains all necessary data for utility and has to be placed in the same directory as Utility itself.
-You can create config and specify all necessary data within the Utility.
-<ins>The following parameters are required:</ins>
-```
-1. Controller IP Address (Master)
-2. API Integration Key
-3. Data Pool UUID (which will be used for operations)
-4. Virtual Machine UUID (List of selected VMs for operations)
-5. Virtual Machine UUID
-6. ...
-```
+## Config File (SpaceVM_Utility.conf)
+_SpaceVM_Utility.conf_ contains all necessary data for utility and has to be placed in the same directory as Utility itself.
 
-You can populate config within Utility Main Menu.
-
-For manual input see format below:
+You can create config and specify/change specific options within the Utility.
 ```
-1.2.3.4
-eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1...
-67497424-e54b-46f1-b023-4d6d65eac104
-304fd7be-06a6-4f4e-9bb9-41bf532ec4fb
-f840320f-cecc-4a31-a799-fd84e7baf089
+[General]
+#Master Controller IP of your cluster
+#Has to be accessible for a machine, which will be executing this Utility
+controller_ip = 
+
+#Integration API Key (how to get your key - https://spacevm.ru/docs/latest/base/operator_guide/security/users/#_14 )
+# do not specify JWT tag with your key!
+api_key = 
+
+[Data_Pool]
+#Data pool which will be used for utility operations
+#(Targeted storage for new vDisks)
+data_pool_uuid = 
+
+[VM_List]
+#Selected VMs which will be used for utility operations
+#How to find UUID:
+#List all available VMs in Utility Main Menu (Option 6)
+#Use https://spacevm.ru/docs/latest/cli/space/vm/info/ or copy UUID from web panel
+uuid_1 = 
+uuid_2 = 
 ```
