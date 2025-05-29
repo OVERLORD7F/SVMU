@@ -12,7 +12,8 @@ console = Console()
 
 def config_menu(base_url, api_key, config_relative_path):
         cls()
-        config_menu_options="[gold bold][1] [grey53 italic]Show current configuration\n[/] \
+        config_menu_options="[gold bold][0] [grey53 italic]Show example configuration\n[/]\
+\n[gold bold][1] [grey53 italic]Show current configuration\n[/] \
 \n[gold bold][2] [grey53 italic]Setup new config file[/]\n \
 \n[gold bold][3] [grey53 italic]Change selected data pool[/]\n\
 \n[gold bold][4] [grey53 italic]Change selected VMs[/]\
@@ -21,6 +22,8 @@ def config_menu(base_url, api_key, config_relative_path):
         console = Console()
         console.print(Panel(config_menu_options, title="[gold bold]SpaceVM Utility - Utility Configuration" , border_style="magenta" , width=150 , padding = 2))
         sub_choice=str(input("\n>>> "))
+        if sub_choice == "0":
+            config_show_example()
         if sub_choice == "1":
             config_show(config_relative_path)
             config_menu(base_url, api_key, config_relative_path)
@@ -30,6 +33,45 @@ def config_menu(base_url, api_key, config_relative_path):
             change_data_pool(base_url, api_key, config_relative_path)
         if sub_choice == "4":
             change_vm_uuids(config_relative_path)
+
+def config_show_example():
+    conf_example= """
+[General]
+#Master Controller IP of your cluster
+#Has to be accessible for a machine, which will be executing this Utility
+controller_ip = 10.20.30.44
+
+#Integration API Key. how to get your key: 
+# ( https://spacevm.ru/docs/latest/base/operator_guide/security/users/#_14 ) 
+# do not specify JWT tag with your key! 
+api_key = 
+
+
+[Data_Pool]
+#Data pool which will be used for utility operations
+#(Targeted storage for new vDisks)
+data_pool_uuid = 
+
+[VM_List]
+#Selected VMs which will be used for utility operations
+#How to find UUID:
+#List all available VMs in Utility Main Menu (Option 6)
+#Use https://spacevm.ru/docs/latest/cli/space/vm/info/ or copy UUID from web panel
+
+uuid_1 = 
+uuid_2 = 
+
+[Courses-Space-VM]
+#Set vDisk size for "Prepare VMs for Courses™" option
+disk1 = 10
+disk2 = 20
+disk3 = 20
+"""
+    cls()
+    console.rule(title = "Example config file", align="center", style="yellow")
+    console.print(conf_example)
+    console.rule(style="yellow")
+    Prompt.ask("[green_yellow bold]ENTER - return to Utility Configuration.. :right_arrow_curving_down:")
 
 def config_show(config_relative_path):
     cls()
@@ -51,13 +93,19 @@ def config_import(config_relative_path):
     if 'VM_List' in config:
         for key, value in config['VM_List'].items():
             vm_list.append(value)
+    
+    #importing disk sizes for SpaceVM courses        
+    disk1_size = config.get('Courses-Space-VM', 'disk1')
+    disk2_size = config.get('Courses-Space-VM', 'disk2') 
+    disk3_size = config.get('Courses-Space-VM', 'disk3')
+
     #get pretty name for selected data pool
     data_pool_name = get_data_pool_name(base_url , api_key , data_pool_uuid)
     #get pretty name for selected VMs
     vm_names=[]
     for x in vm_list:
         vm_names.append(get_vm_name(base_url, api_key, x))
-    return base_url, api_key, data_pool_uuid, data_pool_name, vm_list, vm_names
+    return base_url, api_key, data_pool_uuid, data_pool_name, vm_list, vm_names, disk1_size, disk2_size, disk3_size
 
 def change_data_pool(base_url, api_key, config_relative_path):
     cls()

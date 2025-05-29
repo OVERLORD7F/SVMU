@@ -7,6 +7,7 @@ from rich.console import Console , Align
 from rich.columns import Columns
 from rich.panel import Panel
 from rich.prompt import Prompt
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 console = Console() #necessary for pretty menus & output
 power_state = ["Unknown" , "Off" , "Suspend" , "On"] #3 - on; 2 - suspend; 1 - off; 0 - unknown
@@ -21,7 +22,6 @@ def get_domain_info(base_url , api_key , domain_uuid):
         return domain_data #returns as dictionary!
     else:
         print(f"Failed to retrieve data {response.status_code}")
-
 
 
 def get_domain_all_content(base_url, api_key, domain_uuid):
@@ -56,24 +56,27 @@ def get_disk_uuids(base_url , api_key , domain_all_content):
 
 
 def delete_disk(base_url , api_key , vdisk_uuid):      
-        url = f"http://{base_url}/api/vdisks/{vdisk_uuid}/remove/"
-        headers={
+    url = f"http://{base_url}/api/vdisks/{vdisk_uuid}/remove/"
+    headers={
         "Authorization" : api_key,
         "Content-Type" : "application/json",
-        }
-        payload= {
+    }
+    payload= {
         "force": False,
         "guaranteed": False,
         "clean_type": "zero",
         "clean_count": 1
-        }
+    }
+    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
+        task = progress.add_task("Deleting vDisk...", total=None)
         response = requests.post(url , headers=headers, json=payload)
-        if response.status_code == 200:
-            print(f"vDisk {vdisk_uuid} successfully deleted")
-            return True
-        else:
-            print(f"ERROR deleting disk {vdisk_uuid} :\n {response.status_code} - {response.text}")
-            return False
+        progress.remove_task(task)
+    if response.status_code == 200:
+        console.print(f"[grey53 italic]{vdisk_uuid}[/] :wastebasket:")
+        return True
+    else:
+        print(f"ERROR deleting disk {vdisk_uuid} :\n {response.status_code} - {response.text}")
+        return False
 
 
 def get_disk_info(domain_all_content):
@@ -111,6 +114,7 @@ def get_vm_name(base_url, api_key, vm_uuids):
         vm_name = response.json()
         return (f"{vm_name['verbose_name']}")
 
+
 def vm_info(base_url, api_key, vm_uuids):
     domain_info = get_domain_info(base_url, api_key, vm_uuids)
     domain_all_content = get_domain_all_content(base_url, api_key, vm_uuids)
@@ -125,7 +129,6 @@ def vm_info(base_url, api_key, vm_uuids):
         console.rule(title = "[bold yellow]vDisks Info" , style="grey53" , align="center")
         get_disk_info(domain_all_content)
         console.rule(style="yellow")
-
 
 
 def vm_info_short(base_url, api_key):
@@ -152,28 +155,32 @@ def vm_info_short(base_url, api_key):
     Prompt.ask("[green_yellow bold]ENTER - return to Main Menu.... :right_arrow_curving_down:")
     os.system('cls' if os.name=='nt' else 'clear')  
 
+
 def create_and_attach_disk(base_url , api_key , vm_id, data_pool_uuid, vdisk_size, preallocation):
     domain_name=get_domain_info(base_url , api_key , vm_id)
-    disk_name=domain_name["verbose_name"]+"_"+secrets.token_hex(5) #generates unique hex id. this method can generate ~million unique ids
+    disk_name=domain_name["verbose_name"] + "_" + secrets.token_hex(5) #generates unique hex id. this method can generate ~million unique ids
     url = f"http://{base_url}/api/domains/{vm_id}/create-attach-vdisk/"
     headers={
-    "Authorization" : api_key,
-    "Content-Type" : "application/json",
+        "Authorization" : api_key,
+        "Content-Type" : "application/json",
     }
     payload= {
-    "verbose_name": disk_name,
-    "preallocation": preallocation,
-    "size": vdisk_size,
-    "datapool": data_pool_uuid,
-    "target_bus": "virtio",
-    }    
-    response = requests.post(url , headers=headers, json=payload)
+        "verbose_name": disk_name,
+        "preallocation": preallocation,
+        "size": vdisk_size,
+        "datapool": data_pool_uuid,
+        "target_bus": "virtio",
+    }
+    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
+        task = progress.add_task("Creating and attaching vDisk...", total=None)
+        response = requests.post(url , headers=headers, json=payload)
+        progress.remove_task(task)
     if response.status_code == 200:
-        print(f"vDisk {disk_name} ({vdisk_size}GB) has been created and attached")
+        console.print(f"[grey53 italic]{disk_name} ({vdisk_size}GB)[/] :white_check_mark:")
         return True
     else:
         print(f"ERROR creating vDisk :\n {response.status_code} - {response.text}")
-        return False  
+        return False
 
 #checks for power on.     
 def vm_check_power(base_url , api_key , vm_uuids):
@@ -186,7 +193,7 @@ def vm_check_power(base_url , api_key , vm_uuids):
         if domain_info['user_power_state'] == 0:  
             raise Exception(f"VM - {vm_uuids} is UNAVAILABLE! \n Have fun figuring that out D:")
         if domain_info['user_power_state'] == 1:
-            print(f"VM - {vm_uuids} Power check passed!")
+            pass
 
 def vm_tags(base_url, api_key):
     url = f"http://{base_url}/api/domains/"

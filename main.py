@@ -18,7 +18,7 @@ console = Console()
 os.system('cls' if os.name=='nt' else 'clear') 
 while(menu_choice != ""):    #main menu loop
     check_config(config_relative_path)
-    base_url, api_key, data_pool_uuid, data_pool_name, vm_uuids, vm_names = config_import(config_relative_path) #importing API-KEY / IP / DATA POOL UUID / VM-UUIDs from config
+    base_url, api_key, data_pool_uuid, data_pool_name, vm_uuids, vm_names, disk1_size, disk2_size, disk3_size = config_import(config_relative_path) #importing API-KEY / IP / DATA POOL UUID / VM-UUIDs from config
     menu_options=f"[gold bold][1] [grey53 italic]Manage utility config\n[/grey53 italic] \
 \n[gold bold][2] [grey53 italic]Enter disk edit mode[/grey53 italic]\n \
 \n[gold bold][3] [grey53 italic]Show breif cluster overview[/grey53 italic]\n \
@@ -34,7 +34,7 @@ while(menu_choice != ""):    #main menu loop
     if menu_choice == "1":
         config_menu(base_url, api_key, config_relative_path)
     if menu_choice == "2":
-        disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids)
+        disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids, disk1_size, disk2_size, disk3_size)
     if menu_choice == "3":
         cluster_info(base_url , api_key)
     if menu_choice == "4":
