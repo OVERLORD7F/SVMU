@@ -51,13 +51,19 @@ def config_import(config_relative_path):
     if 'VM_List' in config:
         for key, value in config['VM_List'].items():
             vm_list.append(value)
+    
+    #importing disk sizes for SpaceVM courses        
+    disk1_size = config.get('Courses-Space-VM', 'disk1')
+    disk2_size = config.get('Courses-Space-VM', 'disk2') 
+    disk3_size = config.get('Courses-Space-VM', 'disk3')
+
     #get pretty name for selected data pool
     data_pool_name = get_data_pool_name(base_url , api_key , data_pool_uuid)
     #get pretty name for selected VMs
     vm_names=[]
     for x in vm_list:
         vm_names.append(get_vm_name(base_url, api_key, x))
-    return base_url, api_key, data_pool_uuid, data_pool_name, vm_list, vm_names
+    return base_url, api_key, data_pool_uuid, data_pool_name, vm_list, vm_names, disk1_size, disk2_size, disk3_size
 
 def change_data_pool(base_url, api_key, config_relative_path):
     cls()
