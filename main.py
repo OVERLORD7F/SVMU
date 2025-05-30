@@ -22,7 +22,7 @@ while(menu_choice != ""):    #main menu loop
     menu_options=f"[gold bold][1] [grey53 italic]Manage utility config\n[/grey53 italic] \
 \n[gold bold][2] [grey53 italic]Enter disk edit mode[/grey53 italic]\n \
 \n[gold bold][3] [grey53 italic]Show breif cluster overview[/grey53 italic]\n \
-\n[gold bold][4] [grey53 italic]Show VM info[/grey53 italic]\n \
+\n[gold bold][4] [grey53 italic]Enter VM menu[/grey53 italic]\n \
 \n[gold bold][5] [grey53 italic]Show data pools[/grey53 italic]\n \
 \n\n[green_yellow bold]ENTER - exit Utility[/]\n\n \
 [underline bold grey53]Currently imported config:[/]\n \
@@ -38,7 +38,7 @@ while(menu_choice != ""):    #main menu loop
     if menu_choice == "3":
         cluster_info(base_url , api_key)
     if menu_choice == "4":
-        vm_menu(base_url , api_key, vm_uuids)
+        vm_menu(base_url , api_key, vm_uuids, config_relative_path)
     if menu_choice == "5":
         show_data_pools(base_url , api_key)
     os.system('cls' if os.name=='nt' else 'clear')  #clears screen before looping back to main menu     

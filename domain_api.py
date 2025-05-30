@@ -2,11 +2,12 @@
 import requests
 import secrets #for generating unique names
 import os
+import configparser
 from config_data_import import *
 from rich.console import Console , Align
 from rich.columns import Columns
 from rich.panel import Panel
-from rich.prompt import Prompt
+from rich.prompt import Prompt, Confirm
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 console = Console() #necessary for pretty menus & output
@@ -195,11 +196,11 @@ def vm_check_power(base_url , api_key , vm_uuids):
         if domain_info['user_power_state'] == 1:
             pass
 
-def vm_tags(base_url, api_key):
+def select_vm_by_tags(base_url, api_key, config_relative_path):
     url = f"http://{base_url}/api/domains/"
     response = requests.get(url, headers={'Authorization': api_key})
     if response.status_code == 200:
-        verbose_name_input = input("Write tag:")
+        verbose_name_input = input("Specify tag: ")
         output_renderables = []
         vm_info_short = response.json()
         y= vm_info_short 
@@ -214,16 +215,32 @@ def vm_tags(base_url, api_key):
         console.print(Columns(output_renderables)) #print renderables by columns
     else:
         print(f"Failed to retrieve data {response.status_code}")
-    console.rule(style="grey53")    
+    console.rule(style="grey53")
+
+    if vm_id_list: # promt to write found VM UUIDs to config
+        write_to_config = Confirm.ask("[bold yellow]Write these VM UUIDs to config file?")
+        if write_to_config:
+            config = configparser.ConfigParser()
+            config.read(config_relative_path)
+            # Remove old VM_List section if it exists, then add a fresh one
+            if config.has_section('VM_List'):
+                config.remove_section('VM_List')
+            config.add_section('VM_List')
+            for idx, vm_id in enumerate(vm_id_list, 1):
+                config.set('VM_List', f'uuid_{idx}', vm_id)
+            with open(config_relative_path, 'w') as configfile:
+                config.write(configfile)
+            console.print(f"[green bold]VM UUIDs have been written in config :pencil:")  
+
     Prompt.ask("[green_yellow bold]ENTER - return to Main Menu.... :right_arrow_curving_down:")
     os.system('cls' if os.name=='nt' else 'clear')
     return(vm_id_list)
 
-def vm_menu(base_url, api_key, vm_uuids):
+def vm_menu(base_url, api_key, vm_uuids, config_relative_path):
         os.system('cls' if os.name=='nt' else 'clear') 
         config_menu_options="[gold bold][1] [grey53 italic]Show VM info \n    (for selected VMs in config)[/grey53 italic]\n \
 \n[gold bold][2] [grey53 italic]Show VMs Name / UUID[/grey53 italic]\n \
-\n[gold bold][3] [grey53 italic]Show VMs by tags / UUID[/grey53 italic]\n \
+\n[gold bold][3] [grey53 italic]Select VMs by tag / UUID[/grey53 italic]\n \
 \n\n[green_yellow bold]ENTER - return to Main Menu[/]"
         config_menu_options=Align.center(config_menu_options, vertical="middle")
         console = Console()
@@ -239,4 +256,4 @@ def vm_menu(base_url, api_key, vm_uuids):
             vm_info_short(base_url , api_key)
         if sub_choice == "3":
             os.system('cls' if os.name=='nt' else 'clear') 
-            vm_tags(base_url , api_key)
+            select_vm_by_tags(base_url , api_key, config_relative_path)

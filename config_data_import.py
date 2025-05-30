@@ -119,14 +119,13 @@ def config_import(config_relative_path):
         vm_names.append(get_vm_name(base_url, api_key, x))
     return base_url, api_key, data_pool_uuid, data_pool_name, vm_list, vm_names, disk1_size, disk2_size, disk3_size
 
-def change_data_pool(base_url, api_key, config_relative_path):
+def change_data_pool(base_url, api_key, config_relative_path): #change selected data pool in config
     cls()
     show_data_pools(base_url, api_key)
     new_data_pool_uuid = input("Type NEW Data Pool UUID: ")
     config = configparser.ConfigParser()
     config.read(config_relative_path)
     if config.has_section('Data_Pool'):
-        # update data_pool_uuid
         config.set('Data_Pool', 'data_pool_uuid', new_data_pool_uuid)
         with open(config_relative_path, 'w') as config_file:
             config.write(config_file)
@@ -135,7 +134,7 @@ def change_data_pool(base_url, api_key, config_relative_path):
     config_show(config_relative_path)
 
 
-def change_vm_uuids(config_relative_path):
+def change_vm_uuids(config_relative_path): #change selected VM uuids in config
     config = configparser.ConfigParser()
     config.read(config_relative_path)
     # Remove old VM_List section if it exists, then add a fresh one
