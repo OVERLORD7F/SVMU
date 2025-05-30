@@ -94,10 +94,22 @@ def config_import(config_relative_path):
         for key, value in config['VM_List'].items():
             vm_list.append(value)
     
-    #importing disk sizes for SpaceVM courses        
-    disk1_size = config.get('Courses-Space-VM', 'disk1')
-    disk2_size = config.get('Courses-Space-VM', 'disk2') 
-    disk3_size = config.get('Courses-Space-VM', 'disk3')
+    #importing disk sizes for SpaceVM courses 
+    if config.has_section('Courses-Space-VM'):
+        disk1_size = config.get('Courses-Space-VM', 'disk1')
+        disk2_size = config.get('Courses-Space-VM', 'disk2') 
+        disk3_size = config.get('Courses-Space-VM', 'disk3')
+    else:
+        console.print("[bold yellow]Applying default values to Disk sizes for Courses")
+        disk1_size, disk2_size, disk3_size = 10, 20, 20 #applying default values for courses
+        config = configparser.ConfigParser() #writing default values to config
+        config["Courses-Space-VM"] = {
+            "disk1": 10,
+            "disk2": 20,
+            "disk3": 20,
+        }
+        with open(config_relative_path, "a") as configfile: # appending to existing config file
+            config.write(configfile)        
 
     #get pretty name for selected data pool
     data_pool_name = get_data_pool_name(base_url , api_key , data_pool_uuid)
