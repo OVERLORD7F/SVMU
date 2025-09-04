@@ -1,11 +1,11 @@
-# SpaceVM_VM_Utility
+# SpaceVM Utility (SVMU)
 Utility to manage Virtual Machines in SpaceVM.
 
 Written in python, uses [SpaceVM API](https://spacevm.ru/docs/6.5/api/) to collect and manage existing Virtual Machines in your SpaceVM cluster.
 
 >[!NOTE]
->_For now, this utility is focused on managing virtual disks_<br>
->_Works with SpaceVM 6.5.5+_
+>_This utility is focused on managing virtual disks_<br>
+>_Works with SpaceVM 6.5.5 / 6.5.6 / 6.5.7_
 
 # Requirements
 - Fully setup SpaceVM cluster with VMs
