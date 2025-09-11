@@ -1,4 +1,5 @@
 import os
+from splash_screen import *
 from config_data_import import *
 from cluster_api import *
 from domain_api import * 
@@ -6,6 +7,7 @@ from data_pools_api import *
 from disk_edit_mode import *
 from rich.panel import Panel
 from rich.console import Console , Align
+SVMU_ver="0.3-dev"
 
 config_relative_path = os.path.join(os.getcwd() , 'SpaceVM_Utility.conf')  #config in the same directory with main.py
 
@@ -15,7 +17,8 @@ if not os.path.exists(config_relative_path):
 
 menu_choice=0
 console = Console()
-os.system('cls' if os.name=='nt' else 'clear') 
+os.system('cls' if os.name=='nt' else 'clear')
+show_startup_logo(SVMU_ver) #shows startup splash (ASCII art)
 while(menu_choice != ""):    #main menu loop
     check_config(config_relative_path)
     base_url, api_key, data_pool_uuid, data_pool_name, vm_uuids, vm_names, disk1_size, disk2_size, disk3_size = config_import(config_relative_path) #importing API-KEY / IP / DATA POOL UUID / VM-UUIDs from config
@@ -29,7 +32,7 @@ while(menu_choice != ""):    #main menu loop
 [bold grey53]Connected to Controller: [bright_yellow]{base_url}[/]\n Selected Data Pool: [bright_yellow]{data_pool_name}[/]\n Selected VMs:\n [bright_yellow]{vm_names}"
     menu_options=Align.center(menu_options, vertical="middle")
     menu_subtitle = "[blue bold][link=https://github.com/OVERLORD7F/SpaceVM_VM_Utility]:wrench: Project_GitHub[/link] [yellow]| [magenta bold][link=https://spacevm.ru/docs/]:books: SpaceVM_Docs[/link] [yellow]| [red bold][link=https://comptek.ru]:briefcase: Comptek[/link]"
-    console.print(Panel(menu_options, title="[bold magenta]SpaceVM Utility - Main Menu" , subtitle = menu_subtitle, subtitle_align="right" , style="yellow" , width=150 , padding = 2))
+    console.print(Panel(menu_options, title=f"[bold magenta]SpaceVM Utility {SVMU_ver} - Main Menu" , subtitle = menu_subtitle, subtitle_align="right" , style="yellow" , width=150 , padding = 2))
     menu_choice=str(input("\n>>> "))
     if menu_choice == "1":
         config_menu(base_url, api_key, config_relative_path)
