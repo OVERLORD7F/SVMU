@@ -7,7 +7,21 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 console = Console()
 
-def show_startup_logo(SVMU_ver):
+def get_skip_startup_splash(config_path):
+    """Read only skip_startup_splash from config file."""
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.strip().startswith("skip_startup_splash"):
+                    # Example: skip_startup_splash = yes
+                    return line.split("=")[-1].strip().lower()
+    except Exception:
+        pass
+    return "no"  # Default if not found
+
+def show_startup_logo(skip_startup_splash, SVMU_ver):
+    if skip_startup_splash == "yes":
+        return
     splash_file = os.path.join(os.path.dirname(__file__), "splash-screens.txt")
     if not os.path.exists(splash_file):
         console.print("[bold red]Splash screens file not found![/bold red]")
@@ -43,5 +57,4 @@ def show_startup_logo(SVMU_ver):
     os.system('cls' if os.name=='nt' else 'clear')  #clears screen before returning
 
 
-# Example usage:
 # show_startup_logo()

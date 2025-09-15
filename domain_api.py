@@ -108,7 +108,26 @@ def get_disk_info(domain_all_content):
 
     console.print(Columns(disk_info_renderables))
 
+def get_cdrom_uuid(domain_all_content):
+    if 'cdroms' in domain_all_content:
+        cdrom_ids = [item['id'] for item in domain_all_content['cdroms']]
+        #print("CD-ROM UUIDs:")
+        for cdrom_id in cdrom_ids:
+            #print(cdrom_id)
+            return (cdrom_id)
+    else:
+        console.print("[bold yellow]No 'cdroms' field in recieved data. \nProbably VM does not have any CD-ROMs?")
+
+def get_iso_name(base_url, api_key, iso_uuid): 
+    url = f"http://{base_url}//api/iso/{iso_uuid}/"
+    response = requests.get(url, headers={'Authorization': api_key})
+    if response.status_code == 200:
+        iso_name = response.json()
+        return (f"{iso_name['filename']}")
+
+
 def get_vm_name(base_url, api_key, vm_uuids):
+    console = Console()
     url = f"http://{base_url}//api/domains/{vm_uuids}/"
     response = requests.get(url, headers={'Authorization': api_key})
     if response.status_code == 200:
@@ -129,8 +148,9 @@ def vm_info(base_url, api_key, vm_uuids):
         console.print(vm_info_renderable)
         console.rule(title = "[bold yellow]vDisks Info" , style="grey53" , align="center")
         get_disk_info(domain_all_content)
+        #console.rule(title = "[bold yellow]CD-ROM UUIDs" , style="grey53" , align="center")
+        #print(get_cdrom_uuid(domain_all_content))
         console.rule(style="yellow")
-
 
 def vm_info_short(base_url, api_key):
     url = f"http://{base_url}/api/domains/"
@@ -157,7 +177,7 @@ def vm_info_short(base_url, api_key):
     os.system('cls' if os.name=='nt' else 'clear')  
 
 
-def create_and_attach_disk(base_url , api_key , vm_id, data_pool_uuid, vdisk_size, preallocation):
+def create_and_attach_disk(base_url , api_key , vm_id, data_pool_uuid, vdisk_size, disk_interface, preallocation):
     domain_name=get_domain_info(base_url , api_key , vm_id)
     disk_name=domain_name["verbose_name"] + "_" + secrets.token_hex(5) #generates unique hex id. this method can generate ~million unique ids
     url = f"http://{base_url}/api/domains/{vm_id}/create-attach-vdisk/"
@@ -170,7 +190,7 @@ def create_and_attach_disk(base_url , api_key , vm_id, data_pool_uuid, vdisk_siz
         "preallocation": preallocation,
         "size": vdisk_size,
         "datapool": data_pool_uuid,
-        "target_bus": "virtio",
+        "target_bus": disk_interface, #"virtio"
     }
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
         task = progress.add_task("Creating and attaching vDisk...", total=None)
@@ -235,6 +255,59 @@ def select_vm_by_tags(base_url, api_key, config_relative_path):
     Prompt.ask("[green_yellow bold]ENTER - return to Main Menu.... :right_arrow_curving_down:")
     os.system('cls' if os.name=='nt' else 'clear')
     return(vm_id_list)
+
+
+def attach_iso(base_url, api_key, vm_id, iso_uuid):
+    url = f"http://{base_url}/api/domains/{vm_id}/attach-iso/"
+    domain_all_content = get_domain_all_content(base_url, api_key, vm_id)
+    cdrom_uuid=get_cdrom_uuid(domain_all_content)
+    headers={
+        "Authorization" : api_key,
+        "Content-Type" : "application/json",
+    }
+    payload= {
+        "iso": iso_uuid,
+        "cdrom": cdrom_uuid
+    } 
+
+    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
+        task = progress.add_task("Attaching selected ISO to VM...", total=None)
+        response = requests.post(url , headers=headers, json=payload)
+        progress.remove_task(task)
+    if response.status_code == 200:
+        iso_name = get_iso_name(base_url, api_key, iso_uuid)
+        console.print(f"[grey53 italic]ISO {iso_name} attached[/] :white_check_mark:")
+        return True
+    else:
+        console.print(f"[bold yellow]ERROR {response.status_code} attaching ISO \nProbably VM does not have any CD-ROMs?")
+        return False
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def vm_menu(base_url, api_key, vm_uuids, config_relative_path):
         os.system('cls' if os.name=='nt' else 'clear') 

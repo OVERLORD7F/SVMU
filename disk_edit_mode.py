@@ -4,7 +4,7 @@ from domain_api import *
 from rich.prompt import Prompt
 from rich.console import Console , Align
 
-def disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids, disk1_size, disk2_size, disk3_size): 
+def disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids, disk1_size, disk2_size, disk3_size, disk_interface, preallocation, iso_uuid): 
         os.system('cls' if os.name=='nt' else 'clear')
         diks_edit_menu_options="[gold bold][1] [grey53 italic]Delete vDisk by UUID\n[/grey53 italic] \
 \n[gold bold][2] [grey53 italic]Delete ALL vDisks on selected Virtual Machine[/grey53 italic]\n \
@@ -35,7 +35,7 @@ def disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids, disk1_size, d
             print(vm_uuids)
             select_uuids=int(input("Select VM to attach new disk. \n Type VM uuid index number (from list above) to select: ")) - 1
             print(f"{vm_uuids[select_uuids]} - {data_pool_uuid} - {vdisk_size} ")
-            create_and_attach_disk(base_url , api_key , vm_uuids[select_uuids] , data_pool_uuid , vdisk_size , "falloc")
+            create_and_attach_disk(base_url , api_key , vm_uuids[select_uuids] , data_pool_uuid , vdisk_size , disk_interface, preallocation)
             
         if sub_choice == "4":
             os.system('cls' if os.name=='nt' else 'clear')
@@ -55,13 +55,19 @@ def disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids, disk1_size, d
             for z in vm_uuids: # only for creating disks
                 domain_uuid = z.strip('\n')
                 vm_name = get_vm_name(base_url, api_key, domain_uuid)
-                console.print(f"\n[bold underline yellow]Creating and attaching disk to[/] [bright_cyan]{vm_name}:")
+                console.print(f"\n[bold underline yellow]Creating and attaching disks to[/] [bright_cyan]{vm_name}:")
                 domain_info = get_domain_info(base_url , api_key , domain_uuid)
-                domain_all_content = get_domain_all_content(base_url , api_key , domain_uuid)
+                #domain_all_content = get_domain_all_content(base_url , api_key , domain_uuid)
                 if domain_info:
-                    create_and_attach_disk(base_url , api_key , domain_uuid , data_pool_uuid, disk1_size, "falloc")
-                    create_and_attach_disk(base_url , api_key , domain_uuid , data_pool_uuid, disk2_size, "falloc")
-                    create_and_attach_disk(base_url , api_key , domain_uuid , data_pool_uuid, disk3_size, "falloc")
+                    #iso_uuid="b95241c1-6134-4263-9da5-013459612eeb"
+                    create_and_attach_disk(base_url , api_key , domain_uuid , data_pool_uuid, disk1_size, disk_interface, preallocation)
+                    create_and_attach_disk(base_url , api_key , domain_uuid , data_pool_uuid, disk2_size, disk_interface, preallocation)
+                    create_and_attach_disk(base_url , api_key , domain_uuid , data_pool_uuid, disk3_size, disk_interface, preallocation)
+                    if iso_uuid == 'none':
+                        console.print("[grey53 italic]iso_uuid was not specified. Skipping ISO auto-mount..[/]")
+                    else:
+                        attach_iso(base_url, api_key, domain_uuid, iso_uuid)
+                        
             console.print("[bold green]\nDone. Happy virtualization :thumbs_up::thumbs_up:")
             Prompt.ask("[green_yellow bold]ENTER - return to Main Menu.. :right_arrow_curving_down:")
         os.system('cls' if os.name=='nt' else 'clear')
