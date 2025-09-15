@@ -282,33 +282,6 @@ def attach_iso(base_url, api_key, vm_id, iso_uuid):
         console.print(f"[bold yellow]ERROR {response.status_code} attaching ISO \nProbably VM does not have any CD-ROMs?")
         return False
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def vm_menu(base_url, api_key, vm_uuids, config_relative_path):
         os.system('cls' if os.name=='nt' else 'clear') 
         config_menu_options="[gold bold][1] [grey53 italic]Show VM info \n    (for selected VMs in config)[/grey53 italic]\n \
