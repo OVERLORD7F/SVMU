@@ -167,8 +167,8 @@ def config_import(config_relative_path):
 
 def change_startup_option(config_relative_path):
     cls()
-    console.print("[yellow bold]Skip start-up splash ?")
-    new_value = Prompt.ask("Type your choice", choices=["yes", "no"], default="no")
+    #console.print("[yellow bold]Skip start-up splash ?")
+    new_value = Prompt.ask("[yellow bold]Skip start-up splash ?[/]", choices=["Y", "N"], default="N")
     config = configparser.ConfigParser()
     config.read(config_relative_path)
     if config.has_section('General'):
@@ -232,7 +232,7 @@ def change_vm_uuids(config_relative_path): #change selected VM uuids in config
 
 
 def config_edit(config_relative_path):
-    read_input = input("Create new config file? (Y / N): ")
+    read_input = Prompt.ask("[bold yellow]Create new config file?[/]", choices=["Y", "N"], default="N")
     menu_choice = str(read_input)
     if menu_choice == "Y" or menu_choice == "y":
         base_url = input("Type SpaceVM Controller IP: ")
@@ -285,7 +285,7 @@ def check_config(config_relative_path):
     if os.path.exists(config_relative_path) and os.path.getsize(config_relative_path) > 0: #check if config exists and not empty   
         pass #do nothing
     else:
-        console.print("[yellow bold italic]Config file was not found or empty.. ")
+        console.print("[yellow bold]Config file was not found or empty.. ")
         config_edit(config_relative_path)
 
 def cls():
