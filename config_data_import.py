@@ -12,90 +12,61 @@ console = Console()
 
 def config_menu(base_url, api_key, config_relative_path):
         cls()
-        config_menu_options="[gold bold][0] [grey53 italic]Show example configuration\n[/]\
-\n[gold bold][1] [grey53 italic]Show current configuration\n[/] \
-\n[gold bold][2] [grey53 italic]Setup new config file[/]\n \
-\n[gold bold][3] [grey53 italic]Change selected data pool[/]\n\
-\n[gold bold][4] [grey53 italic]Change selected VMs[/]\n\
-\n[gold bold][5] [grey53 italic]Change ISO UUID (auto-mount)[/]\n\
-\n[gold bold][6] [grey53 italic]Skip start-up splash[/]\n\
+        config_menu_options="[gold bold][1] [grey53 italic]Show current profile configuration\n[/]\
+\n[gold bold][2] [grey53 italic]Setup new profile[/]\n \
+\n[gold bold][3] [grey53 italic]Switch profile[/]\n\
+\n[gold bold][4] [grey53 italic]Delete profile[/]\n\
+\n[gold bold][5] [grey53 italic]Set default profile[/]\n\
+\n[gold bold][6] [grey53 italic]Change selected data pool[/]\n\
+\n[gold bold][7] [grey53 italic]Change selected VMs[/]\n\
+\n[gold bold][8] [grey53 italic]Change ISO UUID (auto-mount)[/]\n\
+\n[gold bold][9] [grey53 italic]Skip start-up splash[/]\n\
 \n\n[green_yellow bold]ENTER - return to Main Menu[/]"
         config_menu_options=Align.center(config_menu_options, vertical="middle")
         console = Console()
         console.print(Panel(config_menu_options, title="[gold bold]SpaceVM Utility - Utility Configuration" , border_style="magenta" , width=150 , padding = 2))
-        sub_choice=str(input("\n>>> "))
-        if sub_choice == "0":
-            config_show_example()
+        sub_choice = console.input("[bold yellow]\n>>> [/]")
+        needs_reload = False
+        
         if sub_choice == "1":
             config_show(config_relative_path)
-            config_menu(base_url, api_key, config_relative_path)
+            return config_menu(base_url, api_key, config_relative_path)
+        
         if sub_choice == "2":
-            config_edit(config_relative_path)
+            new_path = create_new_profile()
+            if new_path:
+                return new_path
+            
         if sub_choice == "3":
-            change_data_pool(base_url, api_key, config_relative_path)
+            new_profile_path = switch_profile()
+            if new_profile_path:  # If we got a new profile path
+                return new_profile_path  # Return it to main.py
+            
         if sub_choice == "4":
-            change_vm_uuids(config_relative_path)
+            delete_profile(config_relative_path)
+
         if sub_choice == "5":
-            change_iso_uuid(config_relative_path)
+            set_default_profile()
+
         if sub_choice == "6":
+            change_data_pool(base_url, api_key, config_relative_path)
+            needs_reload = True
+
+        if sub_choice == "7":
+            change_vm_uuids(config_relative_path)
+            needs_reload = True
+
+        if sub_choice == "8":
+            change_iso_uuid(config_relative_path)
+            needs_reload = True
+
+        if sub_choice == "9":
             change_startup_option(config_relative_path)
-
-def config_show_example():
-    conf_example= """
-[General]
-skip_startup_splash = no
-#Master Controller IP of your cluster
-#Has to be accessible for a machine, which will be executing this Utility
-controller_ip = 10.20.30.44
-
-#Integration API Key. how to get your key: 
-# ( https://spacevm.ru/docs/latest/base/operator_guide/security/users/#_14 ) 
-# do not specify JWT tag with your key! 
-api_key = 
-
-
-[Data_Pool]
-#Data pool which will be used for utility operations
-#(Targeted storage for new vDisks)
-data_pool_uuid = 
-
-[VM_List]
-#Selected VMs which will be used for utility operations
-#How to find UUID:
-#List all available VMs in Utility Main Menu (Option 6)
-#Use https://spacevm.ru/docs/latest/cli/space/vm/info/ or copy UUID from web panel
-
-uuid_1 = 
-uuid_2 = 
-
-[VM_Options]
-#Select interface which will be used in virtual disk creation.
-#Available options: virtio / ide / scsi / sata
-disk_interface = virtio
-
-#Select allocation type for virtual disks
-#Available options: none / falloc / full / metadata
-preallocation = falloc
-
-#Specify uuid of iso you wish to automatically mount to Virtual Machines during operations (Courses)
-#This step is skipped if "none" provided
-iso_uuid = none
-
-
-[Courses-Space-VM]
-#Set vDisk size for "Prepare VMs for Courses™" option
-disk1 = 10
-disk2 = 20
-disk3 = 20
-"""
-    cls()
-    console.rule(title = "Example config file", align="center", style="yellow")
-    console.print(conf_example)
-    console.rule(style="yellow")
-    Prompt.ask("[green_yellow bold]ENTER - return to Utility Configuration.. :right_arrow_curving_down:")
+            needs_reload = True            
+            
+        return needs_reload
 
 def config_show(config_relative_path):
-
     cls()
     console.rule(title = "Current configuration" , align="center" , style="yellow")
     with open(config_relative_path, "r") as f:
@@ -111,7 +82,6 @@ def config_import(config_relative_path):
     base_url = config.get('General', 'controller_ip')
     api_key = "jwt " + config.get('General', 'api_key') #That was realy obvious DACOM >:C
     data_pool_uuid = config.get('Data_Pool', 'data_pool_uuid')
-
 
     vm_list = []
     if 'VM_List' in config:
@@ -168,11 +138,15 @@ def config_import(config_relative_path):
 def change_startup_option(config_relative_path):
     cls()
     #console.print("[yellow bold]Skip start-up splash ?")
-    new_value = Prompt.ask("[yellow bold]Skip start-up splash ?[/]", choices=["Y", "N"], default="N")
+    new_value = Prompt.ask("[yellow bold]Skip start-up splash ?[/]", choices=["Y", "N"], default="N", case_sensitive=False)
+    if new_value == "Y" or new_value == "y":
+        startup_option = "yes"
+    if new_value == "N" or new_value == "n":
+        startup_option = "no"
     config = configparser.ConfigParser()
     config.read(config_relative_path)
     if config.has_section('General'):
-        config.set('General', 'skip_startup_splash', new_value)
+        config.set('General', 'skip_startup_splash', startup_option)
         with open(config_relative_path, 'w') as config_file:
             config.write(config_file)
         console.print(f"[green bold]Option set to: {new_value}")
@@ -182,7 +156,7 @@ def change_startup_option(config_relative_path):
 def change_data_pool(base_url, api_key, config_relative_path): #change selected data pool in config
     cls()
     show_data_pools(base_url, api_key)
-    new_data_pool_uuid = input("Type NEW Data Pool UUID: ")
+    new_data_pool_uuid = console.input("[bold yellow]Type NEW Data Pool UUID: [/]")
     config = configparser.ConfigParser()
     config.read(config_relative_path)
     if config.has_section('Data_Pool'):
@@ -195,7 +169,7 @@ def change_data_pool(base_url, api_key, config_relative_path): #change selected 
 
 def change_iso_uuid(config_relative_path):
     cls()
-    new_iso_uuid = input("Type ISO UUID: ")
+    new_iso_uuid = console.input("[bold yellow]Type ISO UUID: [/]")
     config = configparser.ConfigParser()
     config.read(config_relative_path)
     if config.has_section('VM_Options'):
@@ -214,10 +188,10 @@ def change_vm_uuids(config_relative_path): #change selected VM uuids in config
         config.remove_section('VM_List')
     config.add_section('VM_List')
     cls()
-    console.print("[yellow bold]Type new VM UUIDs one by one (input ENTER to stop):")
+    console.print("[yellow bold]Type new VM UUIDs one by one [red bold](ENTER to stop)[/] ")
     x = 0
     while True:
-        vm_input = input(">> ")
+        vm_input = console.input("[bold yellow]>> [/]" )
         if not vm_input:
             break
         x += 1
@@ -231,62 +205,12 @@ def change_vm_uuids(config_relative_path): #change selected VM uuids in config
     config_show(config_relative_path)
 
 
-def config_edit(config_relative_path):
-    read_input = Prompt.ask("[bold yellow]Create new config file?[/]", choices=["Y", "N"], default="N")
-    menu_choice = str(read_input)
-    if menu_choice == "Y" or menu_choice == "y":
-        base_url = input("Type SpaceVM Controller IP: ")
-        while check_ping(base_url) != True:
-            base_url = console.input("[bold red]No response.\nCheck and type SpaceVM Controller IP again: [/]")
-
-        api_key = input("Type your API Key: ")
-        while check_api_key(base_url, "jwt " + api_key) != 200:
-            api_key = console.input("[bold red]Check and type SpaceVM Controller API Key again: [/]")
-        show_data_pools(base_url, "jwt " + api_key)
-        data_pool_uuid = input("Type Data Pool UUID you wish to use: ")
-
-        config = configparser.ConfigParser()
-        config["General"] = {
-            "controller_ip": base_url,
-            "api_key": api_key,
-            "skip_startup_splash": "no",
-        }
-        config["Data_Pool"] = {"data_pool_uuid": data_pool_uuid}
-
-        #disk_interface=input("Specify preffered disk interface (virtio / ide / scsi / sata): ")
-        #preallocation=input("Specify allocation type for virtual disks (none / falloc / full / metadata): ")
-        #iso_uuid=input("Specify ISO uuid you wish to auto-mount during operations(none - skip this step): ")
-        #config["VM_Options"] = {
-        #    "disk_interface": disk_interface,
-        #    "preallocation": preallocation,
-        #    "iso_uuid": iso_uuid
-        #}
-
-        with open(config_relative_path, "w") as configfile: #writing everything from above to config file
-            config.write(configfile)
-
-        print("Type VM UUIDs one by one (input ENTER to stop)")
-        with open(config_relative_path, "a") as file:
-            file.write("[VM_List]\n") #manually writing section for VMs
-            vm_input = []
-            x = 0
-            while vm_input != "":
-                vm_input = input(">> ")
-                if vm_input:
-                    x += 1
-                    file.write(f"uuid_{x} = {vm_input}\n")
-
-        console.print("[green bold]VM UUIDs have been written in config :pencil:")
-        console.print("[green bold]Configuration completed ! :white_check_mark:")
-        Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
-        cls()
-
 def check_config(config_relative_path):
-    if os.path.exists(config_relative_path) and os.path.getsize(config_relative_path) > 0: #check if config exists and not empty   
-        pass #do nothing
-    else:
-        console.print("[yellow bold]Config file was not found or empty.. ")
-        config_edit(config_relative_path)
+    """Check if config exists and is valid"""
+    # Only check if the file is empty and needs to be removed
+    if os.path.exists(config_relative_path) and os.path.getsize(config_relative_path) == 0:
+        console.print("[red bold]Config file is empty!")
+        os.remove(config_relative_path)  # Remove empty file
 
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
@@ -302,3 +226,223 @@ def check_ping(base_url):
         return True
     else:
         return False
+
+def create_profiles_dir():
+    """Create profiles directory if it doesn't exist"""
+    profiles_dir = os.path.join(os.getcwd(), 'profiles')
+    if not os.path.exists(profiles_dir):
+        os.makedirs(profiles_dir)
+    return profiles_dir
+
+def get_available_profiles():
+    """Get list of available profile names"""
+    profiles_dir = create_profiles_dir()
+    profiles = []
+    for filename in os.listdir(profiles_dir):
+        if filename.endswith('.conf'):
+            profiles.append(filename[:-5])  # Remove .conf extension
+    return profiles
+
+def create_new_profile():
+    """Create a new profile configuration"""
+    cls()
+    profiles_dir = create_profiles_dir()
+    
+    profile_name = Prompt.ask("[yellow bold]Enter new profile name")
+    profile_path = os.path.join(profiles_dir, f"{profile_name}.conf")
+    
+    if os.path.exists(profile_path):
+        console.print("[red bold]Profile already exists!")
+        return
+    
+    base_url = console.input("[bold yellow]Type SpaceVM Controller IP: [/]")
+    while check_ping(base_url) != True:
+        base_url = console.input("[bold red]No response.\nCheck and type SpaceVM Controller IP again: [/]")
+
+    api_key = console.input("[bold yellow]Type your API Key: [/]")
+    while check_api_key(base_url, "jwt " + api_key) != 200:
+        api_key = console.input("[bold red]Check and type SpaceVM Controller API Key again: [/]")
+    
+    show_data_pools(base_url, "jwt " + api_key)
+    data_pool_uuid = console.input("[bold yellow]Type Data Pool UUID you wish to use: [/]")
+
+    config = configparser.ConfigParser()
+    config["General"] = {
+        "controller_ip": base_url,
+        "api_key": api_key,
+        "skip_startup_splash": "no",
+    }
+    config["Data_Pool"] = {"data_pool_uuid": data_pool_uuid}
+
+    with open(profile_path, "w") as configfile:
+        config.write(configfile)
+
+    console.print("[yellow bold]Type VM UUIDs one by one (input ENTER to stop):")
+    with open(profile_path, "a") as file:
+        file.write("[VM_List]\n")
+        x = 0
+        while True:
+            vm_input = console.input("[bold yellow]>> [/]")
+            if not vm_input:
+                break
+            x += 1
+            file.write(f"uuid_{x} = {vm_input}\n")
+
+    console.print("[green bold]Configuration completed! :white_check_mark:")
+    # Prompt to switch to the newly created profile now
+    switch_now = Prompt.ask("[yellow bold]Switch to new profile now?", choices=["Y", "N"] , default="Y", case_sensitive=False)
+    if switch_now.lower() == "y" or switch_now.lower() == "Y":
+        # Also ask if user wants to set this profile as default
+        set_default = Prompt.ask("[yellow bold]Set new profile as default?", choices=["Y", "N"], default="N", case_sensitive=False)
+        if set_default.lower() == "y" or set_default.lower() == "Y":
+            # Use existing set_default_profile logic: mark this profile as default
+            profiles_dir = create_profiles_dir()
+            profiles = get_available_profiles()
+            for p in profiles:
+                p_path = os.path.join(profiles_dir, f"{p}.conf")
+                cfg = configparser.ConfigParser()
+                cfg.read(p_path)
+                if cfg.has_section('General'):
+                    cfg.set('General', 'load_by_default', 'false')
+                    with open(p_path, 'w') as f:
+                        cfg.write(f)
+
+            # set new profile as default
+            cfg = configparser.ConfigParser()
+            cfg.read(profile_path)
+            if not cfg.has_section('General'):
+                cfg.add_section('General')
+            cfg.set('General', 'load_by_default', 'true')
+            with open(profile_path, 'w') as f:
+                cfg.write(f)
+        return profile_path
+
+def switch_profile():
+    """Switch to a different profile."""
+    cls()
+    profiles = get_available_profiles()
+
+    if not profiles:
+        console.print("[red bold]No profiles found!")
+        return
+
+    console.print("[yellow bold]Available profiles:")
+    for i, profile in enumerate(profiles, 1):
+        console.print(f"[grey53]{i}. {profile}")
+
+    choice = Prompt.ask("[yellow bold]Select profile number: ", choices=[str(i) for i in range(1, len(profiles) + 1)])
+    selected_profile = profiles[int(choice) - 1]
+
+    # Get the path for the selected profile
+    selected_profile_path = os.path.join(create_profiles_dir(), f"{selected_profile}.conf")
+
+    if not os.path.exists(selected_profile_path):
+        console.print(f"[red bold]Profile '{selected_profile}' does not exist!")
+        return
+
+    # Return the new profile path to update in main.py
+    console.print(f"[green bold]Switched to profile: {selected_profile}")
+    return selected_profile_path  # Return the new path instead of True
+
+def delete_profile(current_profile_path):
+    """Delete an existing profile"""
+    cls()
+    profiles = get_available_profiles()
+    
+    if not profiles:
+        console.print("[red bold]No profiles found!")
+        return
+        
+    console.print("[yellow bold]Available profiles:")
+    for i, profile in enumerate(profiles, 1):
+        console.print(f"[grey53]{i}. {profile}")
+        
+    choice = Prompt.ask("[yellow bold]Select profile to delete", choices=[str(i) for i in range(1, len(profiles)+1)])
+    selected_profile = profiles[int(choice)-1]
+
+    selected_profile_path = os.path.join(create_profiles_dir(), f"{selected_profile}.conf")
+
+    if os.path.normpath(selected_profile_path) == os.path.normpath(current_profile_path):
+        console.print("[red bold]Cannot delete the currently active profile!")
+        Prompt.ask("[green_yellow bold]Press ENTER to return.. :right_arrow_curving_down:")
+        return
+    
+    confirm = Prompt.ask(f"[red bold]Are you sure you want to delete {selected_profile}?", choices=["Y", "N"] , default="Y" , case_sensitive=False)
+    if confirm.upper() == "Y":
+        os.remove(os.path.join(os.getcwd(), 'profiles', f"{selected_profile}.conf"))
+        console.print(f"[green bold]Profile {selected_profile} deleted!")
+
+def set_default_profile():
+    """Set the selected profile as the default profile."""
+    cls()
+    profiles = get_available_profiles()
+
+    if not profiles:
+        console.print("[red bold]No profiles found!")
+        return
+
+    console.print("[yellow bold]Available profiles:")
+    for i, profile in enumerate(profiles, 1):
+        console.print(f"[grey53]{i}. {profile}")
+
+    choice = Prompt.ask("[yellow bold]Select profile number to set as default", choices=[str(i) for i in range(1, len(profiles) + 1)])
+    selected_profile = profiles[int(choice) - 1]
+
+    # Set all other profiles' default flag to false
+    profiles_dir = create_profiles_dir()
+    for profile in profiles:
+        profile_path = os.path.join(profiles_dir, f"{profile}.conf")
+        config = configparser.ConfigParser()
+        config.read(profile_path)
+        if config.has_section('General'):
+            config.set('General', 'load_by_default', 'false')
+            with open(profile_path, 'w') as f:
+                config.write(f)
+
+    # Set the selected profile as default
+    selected_profile_path = os.path.join(profiles_dir, f"{selected_profile}.conf")
+    config = configparser.ConfigParser()
+    config.read(selected_profile_path)
+    if not config.has_section('General'):
+        config.add_section('General')
+    config.set('General', 'load_by_default', 'true')
+    with open(selected_profile_path, 'w') as f:
+        config.write(f)
+
+    console.print(f"[green bold]Profile '{selected_profile}' set as default!")
+
+def get_default_config_path():
+    """Retrieve the path of the default profile configuration or prompt the user to select one."""
+    profiles_dir = create_profiles_dir()
+    profiles = get_available_profiles()
+
+    for profile in profiles:
+        profile_path = os.path.join(profiles_dir, f"{profile}.conf")
+        config = configparser.ConfigParser()
+        config.read(profile_path)
+        if config.has_section('General') and config.has_option('General', 'load_by_default'):
+            if config.getboolean('General', 'load_by_default'):
+                return profile_path
+
+    # If no default profile is found, prompt the user to select one
+    if profiles:
+        console.print("[yellow bold]No default profile found. Please select a profile to load:")
+        for i, profile in enumerate(profiles, 1):
+            console.print(f"[grey53]{i}. {profile}")
+        choice = Prompt.ask("[yellow bold]Select profile number", choices=[str(i) for i in range(1, len(profiles) + 1)])
+        selected_profile = profiles[int(choice) - 1]
+        return os.path.join(profiles_dir, f"{selected_profile}.conf")
+
+    console.print("[red bold]No profiles available. Please create a new profile.")
+    create_new_profile()
+
+    # Refresh the profiles list and directly return the newly created profile
+    profiles = get_available_profiles()
+    if profiles:
+        new_profile_path = os.path.join(profiles_dir, f"{profiles[-1]}.conf")
+        console.print(f"[green bold]Loaded newly created profile: {profiles[-1]}")
+        return new_profile_path
+
+    raise RuntimeError("Failed to create or load a profile.")
+
+# config_relative_path will be set when passed from main.py

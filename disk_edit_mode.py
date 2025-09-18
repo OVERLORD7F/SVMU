@@ -1,8 +1,9 @@
-import os
+import os, sys
 import requests
 from domain_api import *
 from rich.prompt import Prompt
 from rich.console import Console , Align
+from rich.panel import Panel
 
 def disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids, disk1_size, disk2_size, disk3_size, disk_interface, preallocation, iso_uuid): 
         os.system('cls' if os.name=='nt' else 'clear')
@@ -14,15 +15,15 @@ def disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids, disk1_size, d
         diks_edit_menu_options = Align.center(diks_edit_menu_options, vertical="middle")
         console = Console()
         console.print(Panel(diks_edit_menu_options, title="[bold red]Disk Edit Mode" , border_style="magenta" , width=150 , padding = 2))
-        sub_choice=str(input("\n>>> "))
+        sub_choice = console.input("[bold yellow]\n>>> [/]")
         if sub_choice == "1":
-            read_input=input("Input vDisk uuid to delete: ")
+            read_input = console.input("[bold yellow]Input vDisk uuid to delete: [/]" )
             vdisk_uuid=str(read_input)
             delete_disk(base_url , api_key , vdisk_uuid)
         
         if sub_choice == "2":
             print(vm_uuids)
-            select_uuids=int(input("Select VM to delete disks from. \n Type VM uuid index number (from list above) to select: ")) - 1
+            select_uuids = int(console.input("[bold yellow]Select VM to delete disks from. \n Type VM uuid index number (from list above) to select: [/]")) - 1
             vm_check_power(base_url , api_key , vm_uuids[select_uuids]) #power on check
             domain_all_content = get_domain_all_content(base_url , api_key , vm_uuids[select_uuids])
             disk_uuids = get_disk_uuids(base_url , api_key , domain_all_content)
@@ -31,9 +32,9 @@ def disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids, disk1_size, d
             console.print("[bold red]All attached vDisks has been deleted!")
         
         if sub_choice == "3":
-            vdisk_size=str(input("Enter disk size (GB): "))
+            vdisk_size = str(console.input("[bold yellow]Enter disk size (GB): [/]"))
             print(vm_uuids)
-            select_uuids=int(input("Select VM to attach new disk. \n Type VM uuid index number (from list above) to select: ")) - 1
+            select_uuids = int(console.input("[bold yellow]Select VM to attach new disk. \n Type VM uuid index number (from list above) to select: [/]")) - 1
             print(f"{vm_uuids[select_uuids]} - {data_pool_uuid} - {vdisk_size} ")
             create_and_attach_disk(base_url , api_key , vm_uuids[select_uuids] , data_pool_uuid , vdisk_size , disk_interface, preallocation)
             
@@ -51,7 +52,9 @@ def disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids, disk1_size, d
                 if domain_info:
                     disk_uuids = get_disk_uuids(base_url , api_key , domain_all_content)
                     for y in disk_uuids:
-                        delete_disk(base_url , api_key , y)
+                        if not delete_disk(base_url , api_key , y): #if delete_disk returns False - aborting
+                            console.print("[bold red] Aborting further operations.")
+                            sys.exit(1)
             for z in vm_uuids: # only for creating disks
                 domain_uuid = z.strip('\n')
                 vm_name = get_vm_name(base_url, api_key, domain_uuid)

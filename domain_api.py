@@ -1,9 +1,9 @@
 # functions for working with domain-api
-import requests
+import requests, json
 import secrets #for generating unique names
 import os
 import configparser
-from config_data_import import *
+#from config_data_import import * hopefully removes circular import and warnings with get_iso_name / get_vm_name
 from rich.console import Console , Align
 from rich.columns import Columns
 from rich.panel import Panel
@@ -76,7 +76,13 @@ def delete_disk(base_url , api_key , vdisk_uuid):
         console.print(f"[grey53 italic]{vdisk_uuid}[/] :wastebasket:")
         return True
     else:
-        print(f"ERROR deleting disk {vdisk_uuid} :\n {response.status_code} - {response.text}")
+        #print(f"ERROR deleting disk {vdisk_uuid} :\n {response.status_code} - {response.text}")
+        error_data = json.loads(response.text)
+        #decoding unicode response-string
+        error_detail = error_data.get("errors", [{}])[0].get("detail", "")
+        decoded_error = error_detail.encode('utf-8').decode('utf-8')
+        console.print(f"[bold red]ERROR {response.status_code} deleting disk {vdisk_uuid} :cross_mark:")
+        console.print(f"[bold red]{decoded_error}")
         return False
 
 
@@ -135,12 +141,39 @@ def get_vm_name(base_url, api_key, vm_uuids):
         return (f"{vm_name['verbose_name']}")
 
 
+def get_vm_node_name(domain_all_content):
+    """Return the node verbose_name from domain_all_content if present, else None.
+
+    Expected domain_all_content format:
+      "node": {"id": "<uuid>", "verbose_name": "string"}
+    """
+    try:
+        if isinstance(domain_all_content, dict):
+            node = domain_all_content.get('node')
+            if isinstance(node, dict):
+                return node.get('verbose_name')
+    except Exception:
+        # Defensive: any unexpected structure returns None
+        pass
+    return None
+
+
 def vm_info(base_url, api_key, vm_uuids):
     domain_info = get_domain_info(base_url, api_key, vm_uuids)
     domain_all_content = get_domain_all_content(base_url, api_key, vm_uuids)
     if domain_info:
         console = Console()
-        vm_info_lines = f"[bold]Power State:[/] [bold red]{power_state[domain_info['user_power_state']]}[/bold red] \n[bold]vDisks:[/] {domain_info['vdisks_count']}"
+        # Get the node verbose name from domain_all_content (if present)
+        vm_node = get_vm_node_name(domain_all_content)
+        # fallback display value
+        vm_node = vm_node if vm_node else "Unknown"
+
+        vm_info_lines = (
+            f"[bold]Power State:[/] [bold red]{power_state[domain_info['user_power_state']]}[/bold red]"
+            f" \n[bold]Node:[/] [bold bright_cyan]{vm_node}[/]"
+            f" \n[bold]vDisks:[/] {domain_info.get('vdisks_count', 'N/A')}"
+            
+        )
         vm_info_renderable = Panel(vm_info_lines, title=f"[bold magenta]{domain_info['verbose_name']}" , expand=False , border_style="yellow")
         vm_info_renderable=Align.center(vm_info_renderable, vertical="middle")
         print("\n")
@@ -220,7 +253,7 @@ def select_vm_by_tags(base_url, api_key, config_relative_path):
     url = f"http://{base_url}/api/domains/"
     response = requests.get(url, headers={'Authorization': api_key})
     if response.status_code == 200:
-        verbose_name_input = input("Specify tag: ")
+        verbose_name_input = console.input("[bold yellow]Specify tag: [/]")
         output_renderables = []
         vm_info_short = response.json()
         y= vm_info_short 
@@ -238,8 +271,8 @@ def select_vm_by_tags(base_url, api_key, config_relative_path):
     console.rule(style="grey53")
 
     if vm_id_list: # promt to write found VM UUIDs to config
-        write_to_config = Confirm.ask("[bold yellow]Write these VM UUIDs to config file?")
-        if write_to_config:
+        write_to_config = Prompt.ask("[bold yellow]Write these VM UUIDs to config file?" , choices=["Y" , "N"], default="Y", case_sensitive=False)
+        if write_to_config == "y" or write_to_config == "Y":
             config = configparser.ConfigParser()
             config.read(config_relative_path)
             # Remove old VM_List section if it exists, then add a fresh one
@@ -291,7 +324,7 @@ def vm_menu(base_url, api_key, vm_uuids, config_relative_path):
         config_menu_options=Align.center(config_menu_options, vertical="middle")
         console = Console()
         console.print(Panel(config_menu_options, title="[gold bold]Show VM info" , border_style="magenta" , width=150 , padding = 2))
-        sub_choice=str(input("\n>>> "))
+        sub_choice = console.input("[bold yellow]\n>>> [/]")
         if sub_choice == "1":
             os.system('cls' if os.name=='nt' else 'clear') 
             for x in vm_uuids:
