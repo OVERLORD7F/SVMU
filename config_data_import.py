@@ -168,11 +168,15 @@ def config_import(config_relative_path):
 def change_startup_option(config_relative_path):
     cls()
     #console.print("[yellow bold]Skip start-up splash ?")
-    new_value = Prompt.ask("[yellow bold]Skip start-up splash ?[/]", choices=["Y", "N"], default="N")
+    new_value = Prompt.ask("[yellow bold]Skip start-up splash ?[/]", choices=["Y", "N"], default="N", case_sensitive=False)
+    if new_value == "Y" or new_value == "y":
+        startup_option = "yes"
+    if new_value == "N" or new_value == "n":
+        startup_option = "no"
     config = configparser.ConfigParser()
     config.read(config_relative_path)
     if config.has_section('General'):
-        config.set('General', 'skip_startup_splash', new_value)
+        config.set('General', 'skip_startup_splash', startup_option)
         with open(config_relative_path, 'w') as config_file:
             config.write(config_file)
         console.print(f"[green bold]Option set to: {new_value}")
@@ -232,7 +236,7 @@ def change_vm_uuids(config_relative_path): #change selected VM uuids in config
 
 
 def config_edit(config_relative_path):
-    read_input = Prompt.ask("[bold yellow]Create new config file?[/]", choices=["Y", "N"], default="N")
+    read_input = Prompt.ask("[bold yellow]Create new config file?[/]", choices=["Y", "N"], default="N", case_sensitive=False)
     menu_choice = str(read_input)
     if menu_choice == "Y" or menu_choice == "y":
         base_url = input("Type SpaceVM Controller IP: ")

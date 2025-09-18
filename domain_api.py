@@ -3,7 +3,7 @@ import requests
 import secrets #for generating unique names
 import os
 import configparser
-from config_data_import import *
+#from config_data_import import * hopefully removes circular import and warnings with get_iso_name / get_vm_name
 from rich.console import Console , Align
 from rich.columns import Columns
 from rich.panel import Panel
