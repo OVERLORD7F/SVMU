@@ -22,8 +22,8 @@ Clone repository or use compiled .exe from [Releases Tab](https://github.com/OVE
 Directory _./profiles_ contains all configured profiles with necessary data for utility. 
 
 This directory has to be placed in the same directory as Utility itself.
-
-==You can create config and change specific options within the Utility.==
+>[!TIP]
+>**You can create config and change specific options within the Utility.**
 ```
 [General]
 #Master Controller IP of your cluster
