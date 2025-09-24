@@ -18,12 +18,12 @@ Written in python, uses [SpaceVM API](https://spacevm.ru/docs/6.5/api/) to colle
 # Utility usage
 Clone repository or use compiled .exe from [Releases Tab](https://github.com/OVERLORD7F/SpaceVM_VM_Utility/releases)
 
-## Config / Profile File (SpaceVM_Utility.conf)
+## Config / Profile File
 Directory _./profiles_ contains all configured profiles with necessary data for utility. 
 
-This directory has to be placed in the same directory as Utility itself.
+This directory will be placed in the same directory as Utility itself.
 >[!TIP]
->**You can create config and change specific options within the Utility.**
+>_You can create profiles and change specific options within the Utility._
 ```
 [General]
 #Master Controller IP of your cluster
