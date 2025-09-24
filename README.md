@@ -18,12 +18,12 @@ Written in python, uses [SpaceVM API](https://spacevm.ru/docs/6.5/api/) to colle
 # Utility usage
 Clone repository or use compiled .exe from [Releases Tab](https://github.com/OVERLORD7F/SpaceVM_VM_Utility/releases)
 
-Fill in the config file as stated below.
+## Config / Profile File (SpaceVM_Utility.conf)
+Directory _./profiles_ contains all configured profiles with necessary data for utility. 
 
-## Config File (SpaceVM_Utility.conf)
-_SpaceVM_Utility.conf_ contains all necessary data for utility and has to be placed in the same directory as Utility itself.
+This directory has to be placed in the same directory as Utility itself.
 
-You can create config and change specific options within the Utility.
+==You can create config and change specific options within the Utility.==
 ```
 [General]
 #Master Controller IP of your cluster
@@ -35,11 +35,36 @@ controller_ip = 10.20.30.44
 # do not specify JWT tag with your key!
 api_key = 
 
+#skip start up splash screen (ASCII art)
+skip_startup_splash = no
+
+#loads this profile on utility startup by default
+#only one profile could be loaded by default
+load_by_default = false
 
 [Data_Pool]
 #Data pool which will be used for utility operations
 #(Targeted storage for new vDisks)
 data_pool_uuid = 
+
+[VM_Options]
+#Select interface which will be used in virtual disk creation.
+#Available options: virtio / ide / scsi / sata
+disk_interface = virtio
+
+#Select allocation type for virtual disks
+#Available options: none / falloc / full / metadata
+preallocation = falloc
+
+#Specify uuid of iso you wish to automatically mount to Virtual Machines during operations (Courses)
+#This step is skipped if "none" provided
+iso_uuid = none
+
+[Courses-Space-VM]
+#Set vDisk size for "Prepare VMs for Courses" option
+disk1 = 
+disk2 = 
+disk3 = 
 
 [VM_List]
 #Selected VMs which will be used for utility operations
@@ -48,10 +73,4 @@ data_pool_uuid =
 #Use https://spacevm.ru/docs/latest/cli/space/vm/info/ or copy UUID from web panel
 uuid_1 = 
 uuid_2 =
-
-[Courses-Space-VM]
-#Set vDisk size for "Prepare VMs for Courses" option
-disk1 = 
-disk2 = 
-disk3 = 
 ```
