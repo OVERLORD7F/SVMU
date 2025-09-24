@@ -143,9 +143,15 @@ def change_startup_option(config_relative_path):
         startup_option = "yes"
     if new_value == "N" or new_value == "n":
         startup_option = "no"
+    new_value = Prompt.ask("[yellow bold]Skip start-up splash ?[/]", choices=["Y", "N"], default="N", case_sensitive=False)
+    if new_value == "Y" or new_value == "y":
+        startup_option = "yes"
+    if new_value == "N" or new_value == "n":
+        startup_option = "no"
     config = configparser.ConfigParser()
     config.read(config_relative_path)
     if config.has_section('General'):
+        config.set('General', 'skip_startup_splash', startup_option)
         config.set('General', 'skip_startup_splash', startup_option)
         with open(config_relative_path, 'w') as config_file:
             config.write(config_file)
@@ -204,6 +210,56 @@ def change_vm_uuids(config_relative_path): #change selected VM uuids in config
     Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
     config_show(config_relative_path)
 
+
+def config_edit(config_relative_path):
+    read_input = Prompt.ask("[bold yellow]Create new config file?[/]", choices=["Y", "N"], default="N", case_sensitive=False)
+    menu_choice = str(read_input)
+    if menu_choice == "Y" or menu_choice == "y":
+        base_url = input("Type SpaceVM Controller IP: ")
+        while check_ping(base_url) != True:
+            base_url = console.input("[bold red]No response.\nCheck and type SpaceVM Controller IP again: [/]")
+
+        api_key = input("Type your API Key: ")
+        while check_api_key(base_url, "jwt " + api_key) != 200:
+            api_key = console.input("[bold red]Check and type SpaceVM Controller API Key again: [/]")
+        show_data_pools(base_url, "jwt " + api_key)
+        data_pool_uuid = input("Type Data Pool UUID you wish to use: ")
+
+        config = configparser.ConfigParser()
+        config["General"] = {
+            "controller_ip": base_url,
+            "api_key": api_key,
+            "skip_startup_splash": "no",
+        }
+        config["Data_Pool"] = {"data_pool_uuid": data_pool_uuid}
+
+        #disk_interface=input("Specify preffered disk interface (virtio / ide / scsi / sata): ")
+        #preallocation=input("Specify allocation type for virtual disks (none / falloc / full / metadata): ")
+        #iso_uuid=input("Specify ISO uuid you wish to auto-mount during operations(none - skip this step): ")
+        #config["VM_Options"] = {
+        #    "disk_interface": disk_interface,
+        #    "preallocation": preallocation,
+        #    "iso_uuid": iso_uuid
+        #}
+
+        with open(config_relative_path, "w") as configfile: #writing everything from above to config file
+            config.write(configfile)
+
+        print("Type VM UUIDs one by one (input ENTER to stop)")
+        with open(config_relative_path, "a") as file:
+            file.write("[VM_List]\n") #manually writing section for VMs
+            vm_input = []
+            x = 0
+            while vm_input != "":
+                vm_input = input(">> ")
+                if vm_input:
+                    x += 1
+                    file.write(f"uuid_{x} = {vm_input}\n")
+
+        console.print("[green bold]VM UUIDs have been written in config :pencil:")
+        console.print("[green bold]Configuration completed ! :white_check_mark:")
+        Prompt.ask("[green_yellow bold]Press ENTER to proceed.. :right_arrow_curving_down:")
+        cls()
 
 def check_config(config_relative_path):
     """Check if config exists and is valid"""
