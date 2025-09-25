@@ -7,7 +7,8 @@ Written in python, uses [SpaceVM API](https://spacevm.ru/docs/6.5/api/) to colle
 
 >[!NOTE]
 >_This utility is focused on managing virtual disks_<br>
->_Works with SpaceVM 6.5.5 / 6.5.6 / 6.5.7_
+>_Works with SpaceVM 6.5.5 / 6.5.6 / 6.5.7_ <br>
+> [:file_folder:_Repo Mirror Available Here_:clipboard:](https://gt.7fproject.com/OVERLORD/SVMU)
 
 # Requirements
 - Fully setup SpaceVM cluster with VMs
@@ -17,8 +18,9 @@ Written in python, uses [SpaceVM API](https://spacevm.ru/docs/6.5/api/) to colle
 > Utility is only tested on Windows 10
 - For Windows 10 - [New Microsoft Terminal](https://github.com/microsoft/terminal) is highly recommended (correct colors, menus, etc)
 
-# Utility usage
-Clone repository or use compiled .exe from [Releases Tab](https://github.com/OVERLORD7F/SpaceVM_VM_Utility/releases)
+# Utility usage options:
++ Clone repository, run `main.py` using python
++ Use precompiled .exe from [Releases Tab](https://github.com/OVERLORD7F/SpaceVM_VM_Utility/releases)
 
 ## Config / Profile File
 Directory _./profiles_ contains all configured profiles with necessary data for utility. 
