@@ -137,27 +137,24 @@ def config_import(config_relative_path):
 
 def change_startup_option(config_relative_path):
     cls()
-    #console.print("[yellow bold]Skip start-up splash ?")
+    # Ask the user once and normalize the answer
     new_value = Prompt.ask("[yellow bold]Skip start-up splash ?[/]", choices=["Y", "N"], default="N", case_sensitive=False)
-    if new_value == "Y" or new_value == "y":
+    if new_value.lower() == "y":
         startup_option = "yes"
-    if new_value == "N" or new_value == "n":
+    else:
         startup_option = "no"
-    new_value = Prompt.ask("[yellow bold]Skip start-up splash ?[/]", choices=["Y", "N"], default="N", case_sensitive=False)
-    if new_value == "Y" or new_value == "y":
-        startup_option = "yes"
-    if new_value == "N" or new_value == "n":
-        startup_option = "no"
+
     config = configparser.ConfigParser()
     config.read(config_relative_path)
-    if config.has_section('General'):
-        config.set('General', 'skip_startup_splash', startup_option)
-        config.set('General', 'skip_startup_splash', startup_option)
-        with open(config_relative_path, 'w') as config_file:
-            config.write(config_file)
-        console.print(f"[green bold]Option set to: {new_value}")
-    else:
-        console.print("[red bold]No section 'General' in config file")
+    # Ensure General section exists so we can write the option
+    if not config.has_section('General'):
+        config.add_section('General')
+
+    config.set('General', 'skip_startup_splash', startup_option)
+    with open(config_relative_path, 'w') as config_file:
+        config.write(config_file)
+
+    console.print(f"[green bold]Option set to: {new_value}")
 
 def change_data_pool(base_url, api_key, config_relative_path): #change selected data pool in config
     cls()
