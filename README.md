@@ -1,5 +1,5 @@
 # SpaceVM Utility (SVMU)
-Utility to manage Virtual Machines in SpaceVM.
+Utility for managing Virtual Machines in SpaceVM.
 
 Written in python, uses [SpaceVM API](https://spacevm.ru/docs/6.5/api/) to collect and manage existing Virtual Machines in your SpaceVM cluster.
 
@@ -14,15 +14,20 @@ Written in python, uses [SpaceVM API](https://spacevm.ru/docs/6.5/api/) to colle
 
 # Requirements
 - Fully setup SpaceVM cluster with VMs
-- SpaceVM Utility and SpaceVM cluster should be in LAN
+- Your SpaceVM cluster should be reachable by Utility (e.g. in LAN)
 - Obtain your [API Key](https://spacevm.ru/docs/latest/base/operator_guide/security/users/#_14)
 >[!WARNING]
-> Utility is only tested on Windows 10
-- For Windows 10 - [New Microsoft Terminal](https://github.com/microsoft/terminal) is highly recommended (correct colors, menus, etc)
+> Utility tested only on Windows 10
+>
+> [New Microsoft Terminal](https://github.com/microsoft/terminal) is highly recommended for Windows 10 (correct colors, menus, etc)
 
-# Utility usage options:
-+ Clone repository, run `main.py` using python
+# Utility usage:
++ Clone repository, run `main.py` using python.<br>
+_(This will require manual installation of all dependencies)_
 + Use precompiled .exe from [Releases Tab](https://github.com/OVERLORD7F/SpaceVM_VM_Utility/releases)
+<img src=assets/images/disk_edit_mode.png>
+<img src=assets/images/prepare_courses_1.png>
+<img src=assets/images/prepare_courses_2.png>
 
 ## Config / Profile File
 Directory _./profiles_ contains all configured profiles with necessary data for utility. 
@@ -30,6 +35,10 @@ Directory _./profiles_ contains all configured profiles with necessary data for 
 This directory will be placed in the same directory as Utility itself.
 >[!TIP]
 >_You can create profiles and change specific options within the Utility._
+
+<img src=assets/images/profiles_1.png>
+
+#Profile example for reference
 ```
 [General]
 #Master Controller IP of your cluster
