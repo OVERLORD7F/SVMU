@@ -21,7 +21,7 @@ Written in python, uses [SpaceVM API](https://spacevm.ru/docs/6.5/api/) to colle
 >
 > [New Microsoft Terminal](https://github.com/microsoft/terminal) is highly recommended for Windows 10 (correct colors, menus, etc)
 
-# Utility usage:
+# Utility usage
 + Clone repository, run `main.py` using python.<br>
 _(This will require manual installation of all dependencies)_
 + Use precompiled .exe from [Releases Tab](https://github.com/OVERLORD7F/SpaceVM_VM_Utility/releases)
@@ -29,7 +29,7 @@ _(This will require manual installation of all dependencies)_
 <img src=assets/images/prepare_courses_1.png>
 <img src=assets/images/prepare_courses_2.png>
 
-## Config / Profile File
+## Config / Profiles
 Directory _./profiles_ contains all configured profiles with necessary data for utility. 
 
 This directory will be placed in the same directory as Utility itself.
@@ -38,7 +38,7 @@ This directory will be placed in the same directory as Utility itself.
 
 <img src=assets/images/profiles_1.png>
 
-#Profile example for reference
+<ins>**Profile example for reference:**</ins>
 ```
 [General]
 #Master Controller IP of your cluster
