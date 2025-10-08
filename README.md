@@ -3,7 +3,9 @@ Utility to manage Virtual Machines in SpaceVM.
 
 Written in python, uses [SpaceVM API](https://spacevm.ru/docs/6.5/api/) to collect and manage existing Virtual Machines in your SpaceVM cluster.
 
-![Utility Main Menu](https://github.com/OVERLORD7F/SVMU/blob/main/assets/images/svmu-main-menu.png)
+<p align="center">
+<img src=assets/images/svmu-main-menu.png>
+</p>
 
 >[!NOTE]
 >_This utility is focused on managing virtual disks_<br>
