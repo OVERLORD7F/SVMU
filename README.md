@@ -9,7 +9,7 @@ Written in python, uses [SpaceVM API](https://spacevm.ru/docs/6.5/api/) to colle
 
 >[!NOTE]
 >_This utility is focused on managing virtual disks_<br>
->_Works with SpaceVM 6.5.5 / 6.5.6 / 6.5.7_ <br>
+>_Works with SpaceVM 6.5.5 / 6.5.6 / 6.5.7 / 6.5.8_ <br>
 > [:file_folder:_Repo Mirror Available Here_:clipboard:](https://gt.7fproject.com/OVERLORD/SVMU)
 
 # Requirements

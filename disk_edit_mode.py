@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, time
 import requests
 from domain_api import *
 from rich.prompt import Prompt
@@ -7,10 +7,10 @@ from rich.panel import Panel
 
 def disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids, disk1_size, disk2_size, disk3_size, disk_interface, preallocation, iso_uuid): 
         os.system('cls' if os.name=='nt' else 'clear')
-        diks_edit_menu_options="[gold bold][1] [grey53 italic]Delete vDisk by UUID\n[/grey53 italic] \
-\n[gold bold][2] [grey53 italic]Delete ALL vDisks on selected Virtual Machine[/grey53 italic]\n \
-\n[gold bold][3] [grey53 italic]Create Disk[/grey53 italic]\n \
-\n[gold bold][4] [grey53 italic]Prepare VMs for Courses™[/grey53 italic]\n \
+        diks_edit_menu_options="[gold1 bold][1] [grey53 italic]Delete vDisk by UUID\n[/grey53 italic] \
+\n[gold1 bold][2] [grey53 italic]Delete ALL vDisks on selected Virtual Machine[/grey53 italic]\n \
+\n[gold1 bold][3] [grey53 italic]Create Disk[/grey53 italic]\n \
+\n[gold1 bold][4] [grey53 italic]Prepare VMs for Courses™[/grey53 italic]\n \
 \n\n[green_yellow bold]ENTER - return to Main Menu"
         diks_edit_menu_options = Align.center(diks_edit_menu_options, vertical="middle")
         console = Console()
@@ -44,6 +44,7 @@ def disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids, disk1_size, d
             for y in vm_uuids: #power-on check
                 domain_uuid = y.strip('\n')
                 vm_check_power(base_url , api_key , domain_uuid)
+            start_time = time.perf_counter() #after power-on check passed, starting timer
             for x in vm_uuids: # only for removing disks
                 domain_uuid = x.strip('\n')
                 domain_info = get_domain_info(base_url , api_key , domain_uuid)
@@ -70,7 +71,7 @@ def disk_edit_mode(base_url , api_key , data_pool_uuid , vm_uuids, disk1_size, d
                         console.print("[grey53 italic]iso_uuid was not specified. Skipping ISO auto-mount..[/]")
                     else:
                         attach_iso(base_url, api_key, domain_uuid, iso_uuid)
-                        
-            console.print("[bold green]\nDone. Happy virtualization :thumbs_up::thumbs_up:")
+            end_time = time.perf_counter() # timer end           
+            console.print(f"[bold gold1]\nOperation completed. Elapsed time {end_time - start_time:.1f} seconds \n[bold green]Happy virtualization :thumbs_up::thumbs_up:")
             Prompt.ask("[green_yellow bold]ENTER - return to Main Menu.. :right_arrow_curving_down:")
         os.system('cls' if os.name=='nt' else 'clear')

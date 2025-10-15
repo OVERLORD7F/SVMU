@@ -317,9 +317,9 @@ def attach_iso(base_url, api_key, vm_id, iso_uuid):
 
 def vm_menu(base_url, api_key, vm_uuids, config_relative_path):
         os.system('cls' if os.name=='nt' else 'clear') 
-        config_menu_options="[gold bold][1] [grey53 italic]Show VM info \n    (for selected VMs in config)[/grey53 italic]\n \
-\n[gold bold][2] [grey53 italic]Show VMs Name / UUID[/grey53 italic]\n \
-\n[gold bold][3] [grey53 italic]Select VMs by tag / UUID[/grey53 italic]\n \
+        config_menu_options="[gold1 bold][1] [grey53 italic]Show VM info \n    (for selected VMs in config)[/grey53 italic]\n \
+\n[gold1 bold][2] [grey53 italic]Show VMs Name / UUID[/grey53 italic]\n \
+\n[gold1 bold][3] [grey53 italic]Select VMs by tag / UUID[/grey53 italic]\n \
 \n\n[green_yellow bold]ENTER - return to Main Menu[/]"
         config_menu_options=Align.center(config_menu_options, vertical="middle")
         console = Console()
