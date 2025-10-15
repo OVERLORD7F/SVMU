@@ -22,10 +22,9 @@ def get_skip_startup_splash(config_path):
 def show_startup_logo(skip_startup_splash, SVMU_ver):
     if skip_startup_splash == "yes":
         return
-    splash_dir = os.path.dirname(__file__) # Assume splash file lives in the assets/ directory
-    splash_file = os.path.join(splash_dir, "assets", "splash-screens.txt")
+    splash_file = os.path.join(os.path.dirname(__file__), "splash-screens.txt")
     if not os.path.exists(splash_file):
-        console.print(f"[bold red]No splash file fouond at: {splash_file}[/bold red]")
+        console.print(f"[bold red]No splash file found at: {splash_file}[/bold red]")
         return
 
     with open(splash_file, "r", encoding="utf-8") as f:
