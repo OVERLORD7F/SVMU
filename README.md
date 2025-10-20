@@ -16,14 +16,20 @@ Written in python, uses [SpaceVM API](https://spacevm.ru/docs/6.5/api/) to colle
 - Fully setup SpaceVM cluster with VMs
 - Your SpaceVM cluster should be reachable by Utility (e.g. in LAN)
 - Obtain your [API Key](https://spacevm.ru/docs/latest/base/operator_guide/security/users/#_14)
->[!WARNING]
-> Utility tested only on Windows 10
+
+# Utility usage
+>[!NOTE]
+> Tested on Linux / Windows 10
 >
 > [New Microsoft Terminal](https://github.com/microsoft/terminal) is highly recommended for Windows 10 (correct colors, menus, etc)
 
-# Utility usage
+**Dependencies:** [Requests](https://pypi.org/project/requests/) , [Rich](https://pypi.org/project/rich/)
+
+**Linux**
 + Clone repository, run `main.py` using python.<br>
 _(This will require manual installation of all dependencies)_
+
+**Windows**
 + Use precompiled .exe from [Releases Tab](https://github.com/OVERLORD7F/SpaceVM_VM_Utility/releases)
 <img src=assets/images/disk_edit_mode.png>
 <img src=assets/images/prepare_courses_1.png>
